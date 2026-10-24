@@ -82,6 +82,8 @@ class Avaliacao:
     deterioracao: float
     classe: str                         # A1, A2, B, C, D
     motivo_classe: str                  # "piso: oncológico", "limiar: total 7.0 >= 6"…
+    p_piora: float                      # P(piora em 90 dias), tabela empírica
+    ordo_clinico: float                 # 0–100, parte clínica do OrdoScore (sem prazo)
     contribuicoes: list[Contribuicao] = field(default_factory=list)
     alertas: list[Achado] = field(default_factory=list)
 
@@ -108,3 +110,10 @@ class Sugestao:
     motivos: list[Achado]
     justificativa: str
     urgente: bool = False
+    ordo_clinico_de: float | None = None
+    ordo_clinico_para: float | None = None
+    # preenchidas por fila.prever_posicoes (OrdoScore final, com prazo, na data de referência)
+    ordo_de: float | None = None
+    ordo_para: float | None = None
+    posicao_de: int | None = None
+    posicao_para: int | None = None
