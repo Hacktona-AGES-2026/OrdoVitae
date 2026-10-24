@@ -18,6 +18,7 @@ class RepoSolicitacoes(Protocol):
     def ativas(self) -> list[dict]: ...                       # sem saída registrada
     def esta_ativa(self, sid: str) -> bool: ...               # recebida e sem saída
     def ativa_do_paciente(self, pid: str, proc_id: str) -> dict | None: ...
+    def datas_entrada(self, sids: list[str]) -> dict[str, date]: ...   # uma consulta para várias
 
 
 class RepoEventos(Protocol):

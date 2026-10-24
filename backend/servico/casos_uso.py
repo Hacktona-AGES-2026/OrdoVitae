@@ -3,6 +3,7 @@
 Fluxo de referência: spikes/replay.py. Este módulo depende só de `motor`, `extracao` e das portas.
 """
 import csv
+import functools
 import io
 from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Callable, Mapping
@@ -24,6 +25,19 @@ SIMULACAO = "simulacao"            # autor das aprovações automáticas
 MUDANCA_DE_CLASSE = {T.CLASSIFICACAO_INICIAL, T.SUBIR, T.DESCER}
 
 
+def _escrita(metodo):
+    """Invalida o cache da fila antes E depois da escrita: uma leitura concorrente (threadpool da API)
+    que montasse a fila antes do commit deixaria em cache a fila velha com a versão nova."""
+    @functools.wraps(metodo)
+    def envolvido(self, *args, **kwargs):
+        self.invalidar_cache()
+        try:
+            return metodo(self, *args, **kwargs)
+        finally:
+            self.invalidar_cache()
+    return envolvido
+
+
 class ServicoFila:
     def __init__(self, uow: Callable[[], UnidadeDeTrabalho], relogio: Relogio, redator: Redator,
                  risco_procedimento: Mapping[str, int]):
@@ -41,8 +55,8 @@ class ServicoFila:
 
     # --- integração ------------------------------------------------------------------
 
+    @_escrita
     def receber_solicitacao(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
-        self.invalidar_cache()
         sid = dados["solicitacao_id"]
         entrada = regras.data(dados["data_entrada_fila"])
         hoje = max(self.relogio.hoje(), entrada)
@@ -66,8 +80,8 @@ class ServicoFila:
             uow.commit()
         return self._depois_de_registrar(ids)
 
+    @_escrita
     def receber_evento(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
-        self.invalidar_cache()
         eid, sid = dados["evento_id"], dados["solicitacao_id"]
         hoje = self.relogio.hoje()
         with self.uow() as uow:
@@ -114,9 +128,9 @@ class ServicoFila:
 
     # --- regulador --------------------------------------------------------------------
 
+    @_escrita
     def aprovar_sugestao(self, id: int, por: str = REGULADOR, se_pendente: bool = False) -> SugestaoRegistrada:
         """Aplica a sugestão. `se_pendente`: usado pela aprovação automática, ignora o que já foi decidido."""
-        self.invalidar_cache()
         hoje = self.relogio.hoje()
         with self.uow() as uow:
             r = self._obter_pendente(uow, id, se_pendente)
@@ -138,8 +152,8 @@ class ServicoFila:
             uow.commit()
             return uow.sugestoes.obter(id)
 
+    @_escrita
     def rejeitar_sugestao(self, id: int, comentario: str, por: str = REGULADOR) -> SugestaoRegistrada:
-        self.invalidar_cache()
         if not (comentario or "").strip():
             raise ComentarioObrigatorio("rejeitar uma sugestão exige comentário")
         hoje = self.relogio.hoje()
@@ -153,9 +167,9 @@ class ServicoFila:
 
     # --- simulação ---------------------------------------------------------------------
 
+    @_escrita
     def avancar_dia(self, dias: int = 1) -> date:
         """Avança o relógio dia a dia, guardando uma foto da fila em cada dia."""
-        self.invalidar_cache()
         if dias < 1:
             raise TransicaoInvalida("dias deve ser >= 1")
         for _ in range(dias):
@@ -211,8 +225,7 @@ class ServicoFila:
                 foto = uow.historico.foto(data)
                 if not foto:
                     raise NaoEncontrado(f"sem foto da fila em {data.isoformat()}")
-                entradas = {sid: regras.data(uow.solicitacoes.obter(sid)["data_entrada_fila"])
-                            for sid in (x["solicitacao_id"] for x in foto)}
+                entradas = uow.solicitacoes.datas_entrada([x["solicitacao_id"] for x in foto])
                 return [LinhaFila(x["solicitacao_id"], x["posicao"], anterior.get(x["solicitacao_id"]), x["classe"],
                                   x["score"], (data - entradas[x["solicitacao_id"]]).days) for x in foto]
 

@@ -46,6 +46,10 @@ class RepoSolicitacoesSQL:
                                                     SolicitacaoORM.procedimento_id == proc_id)).first()
         return dict(linha.dados) if linha else None
 
+    def datas_entrada(self, sids: list[str]) -> dict[str, date]:
+        q = select(SolicitacaoORM.solicitacao_id, SolicitacaoORM.data_entrada).where(SolicitacaoORM.solicitacao_id.in_(sids))
+        return {sid: entrada for sid, entrada in self.s.execute(q)}
+
 
 class RepoEventosSQL:
     def __init__(self, s: Session):

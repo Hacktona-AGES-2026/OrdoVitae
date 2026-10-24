@@ -46,6 +46,10 @@ class RepoSolicitacoesMemoria:
         return next((s for s in self.ativas()
                      if s.get("paciente_id") == pid and s.get("procedimento_id") == proc_id), None)
 
+    def datas_entrada(self, sids: list[str]) -> dict[str, date]:
+        return {sid: date.fromisoformat(str(self.b.solicitacoes[sid]["data_entrada_fila"])[:10])
+                for sid in sids if sid in self.b.solicitacoes}
+
 
 class RepoEventosMemoria:
     def __init__(self, banco: BancoMemoria):
