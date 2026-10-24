@@ -4,3 +4,4 @@ python-dotenv
 sqlalchemy>=2.0
 fastapi
 uvicorn
+pandas  # só para rodar verificar_fila_priorizada.py
