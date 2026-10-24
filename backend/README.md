@@ -40,17 +40,21 @@ Documentação interativa em `http://localhost:8000/docs`.
 
 | Método | Rota | Caso de uso |
 |---|---|---|
-| POST | `/integracao/solicitacoes` `{dados, respostaLlm?}` | `receber_solicitacao` |
-| POST | `/integracao/eventos` `{dados, respostaLlm?}` | `receber_evento` |
-| POST | `/simulacao/avancar-dia` `{dias}` | `avancar_dia` (foto da fila a cada dia) |
-| GET / PUT | `/simulacao` `{autoAprovar}` | relógio e aprovação automática |
-| GET | `/fila?data=` | fila viva (ou foto de um dia passado) |
-| GET | `/fila/exportar.csv` | `fila_priorizada.csv` |
+| POST | `/integracao/solicitacoes` `{dados, respostaLlm?}` | 201 · `receber_solicitacao` |
+| POST | `/integracao/eventos` `{dados, respostaLlm?}` | 201 · `receber_evento` |
+| GET | `/simulacao` | relógio e aprovação automática |
+| PATCH | `/simulacao` `{autoAprovar?, hoje?, modo?}` | avança até `hoje` (`passo`: dia a dia com foto; `rapido`: aprovação automática) |
+| DELETE | `/simulacao` | 204 · zera o banco (só com `SIMULADOR=1`) |
+| GET | `/fila?data=&limite=&offset=` | fila viva ou foto de um dia, paginada |
+| GET | `/fila/dias?de=&ate=&limite=` | fotos de até 31 dias (player), `limite` posições por dia |
+| GET | `/fila.csv` | `fila_priorizada.csv` (entregável) |
 | GET | `/solicitacoes/{sid}` | ficha: dados, achados com evidência, histórico, sugestões |
-| GET | `/sugestoes?status=pendente` | com prévia de posição (de → para) |
-| POST | `/sugestoes/{id}/aprovar` | |
-| POST | `/sugestoes/{id}/rejeitar` `{comentario}` | comentário obrigatório |
-| GET | `/alertas` | HbA1c, perda de contato, dados insuficientes, sem ASA, crítico, prazo estourado |
+| GET | `/sugestoes?status=&limite=&offset=` | paginada; pendentes com prévia de posição e justificativa comparativa |
+| GET | `/sugestoes/{id}` | uma sugestão |
+| PATCH | `/sugestoes/{id}` `{status: aprovada\|rejeitada, comentario?}` | rejeitar exige comentário; decidir 2x → 409 |
+| GET | `/alertas?tipo=&limite=&offset=` | paginada: HbA1c, perda de contato, dados insuficientes, sem ASA, crítico, prazo estourado |
+
+Toda coleção é paginada (`limite` padrão 50, máximo 200) e volta como `{itens, total, limite, offset}`.
 
 JSON em camelCase. Erros: 404 (não encontrado), 409 (transição inválida), 422 (comentário obrigatório / entrada inválida).
 

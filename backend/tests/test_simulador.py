@@ -71,16 +71,18 @@ class TestRotasSimulador(unittest.TestCase):
 
     def test_sem_variavel_rotas_nao_existem(self):
         api = self._app(False)
-        self.assertEqual(api.post("/simulacao/reiniciar").status_code, 404)
+        self.assertEqual(api.delete("/simulacao").status_code, 405)
 
-    def test_com_variavel_avancar_injeta_e_frames_devolve_a_fila(self):
+    def test_com_variavel_patch_injeta_e_historico_devolve_os_dias(self):
         api = self._app(True)
-        self.assertEqual(api.post("/simulacao/pular-ate", json={"data": "2022-12-31"}).status_code, 200)
-        self.assertEqual(api.post("/simulacao/avancar-dia", json={"dias": 2}).json()["hoje"], "2023-01-02")
-        frames = api.get("/simulacao/frames", params={"de": "2022-12-30"}).json()
-        self.assertEqual([f["data"] for f in frames], ["2022-12-31", "2023-01-01", "2023-01-02"])
-        self.assertEqual(api.post("/simulacao/reiniciar").json()["hoje"], None)
-
+        self.assertEqual(api.patch("/simulacao", json={"hoje": "2022-12-31", "modo": "rapido"}).status_code, 200)
+        self.assertEqual(api.patch("/simulacao", json={"hoje": "2023-01-02"}).json()["hoje"], "2023-01-02")
+        dias = api.get("/fila/dias", params={"de": "2022-12-30", "limite": 5}).json()
+        self.assertEqual([d["data"] for d in dias], ["2022-12-31", "2023-01-01", "2023-01-02"])
+        self.assertTrue(all(len(d["ordem"]) <= 5 and d["total"] > 5 for d in dias))
+        self.assertEqual(api.get("/fila/dias", params={"de": "2022-01-01"}).status_code, 409)
+        self.assertEqual(api.delete("/simulacao").status_code, 204)
+        self.assertIsNone(api.get("/simulacao").json()["hoje"])
 
 if __name__ == "__main__":
     unittest.main()

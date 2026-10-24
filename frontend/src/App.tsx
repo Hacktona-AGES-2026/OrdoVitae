@@ -13,7 +13,7 @@ import {
   useFilaDoDia,
   usePendentes,
   useSimulacao,
-  useSugestoes,
+  useSugestoesDoDia,
 } from "@/api/consultas"
 import type { ItemFilaDTO, SugestaoDTO } from "@/api/tipos"
 import { DetalheDialog } from "@/components/fila/detalhe-dialog"
@@ -187,8 +187,9 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
   const ehHoje = data === hoje
   const primeiroDia = frame === 0
 
-  const filaQ = useFilaDoDia(data, hoje)
-  const sugestoesQ = useSugestoes()
+  const porPagina = POR_PAGINA[visao]
+  const filaQ = useFilaDoDia(data, hoje, (pagina - 1) * porPagina, porPagina)
+  const sugestoesQ = useSugestoesDoDia(data)
   const pendentesQ = usePendentes()
   const avancar = useAvancarDia()
 
@@ -204,21 +205,21 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
 
   // pré-carrega os próximos dias (foto antiga é imutável e fica em cache)
   useEffect(() => {
-    preCarregarDias(qc, datas.slice(frame + 1, frame + 4), hoje)
-  }, [qc, datas, frame, hoje])
+    preCarregarDias(qc, datas.slice(frame + 1, frame + 4), hoje, porPagina)
+  }, [qc, datas, frame, hoje, porPagina])
 
   // play: no meio da timeline reproduz as fotos; no último dia passa a simular dias novos no backend
   useEffect(() => {
     if (!tocando) return
     const id = setInterval(() => {
       if (frame < ultimo) {
-        if (diaCarregado(qc, datas[frame + 1])) setFrame(frame + 1)
+        if (diaCarregado(qc, datas[frame + 1], porPagina)) setFrame(frame + 1)
       } else if (!avancar.isPending && !filaQ.isFetching) {
         simular()
       }
     }, velocidade)
     return () => clearInterval(id)
-  }, [tocando, velocidade, frame, ultimo, datas, qc, setFrame, simular, avancar.isPending, filaQ.isFetching])
+  }, [tocando, velocidade, frame, ultimo, datas, qc, setFrame, simular, avancar.isPending, filaQ.isFetching, porPagina])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -248,20 +249,19 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
     [pendentes],
   )
 
+  // resumo do dia inteiro vem pronto do backend (a página só traz `porPagina` itens)
   const stats = useMemo(
-    () => ({
-      naFila: ordem.length,
-      saltos: primeiroDia ? 0 : ordem.filter((i) => i.posicaoAnterior !== null && Math.abs(i.posicaoAnterior - i.posicao) >= LIMIAR_SALTO).length,
-      foraDoPrazo: ordem.filter((i) => i.alemDoPrazo > 0).length,
-      criticos: ordem.filter((i) => i.critico).length,
-    }),
-    [ordem, primeiroDia],
+    () => {
+      const r = dia?.resumo
+      return { naFila: r?.naFila ?? 0, saltos: primeiroDia ? 0 : (r?.saltos ?? 0), foraDoPrazo: r?.foraDoPrazo ?? 0, criticos: r?.criticos ?? 0 }
+    },
+    [dia, primeiroDia],
   )
 
-  const porPagina = POR_PAGINA[visao]
-  const totalPaginas = Math.max(1, Math.ceil(ordem.length / porPagina))
+  const totalNaFila = dia?.total ?? 0
+  const totalPaginas = Math.max(1, Math.ceil(totalNaFila / porPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
-  const visiveis = ordem.slice((paginaAtual - 1) * porPagina, paginaAtual * porPagina)
+  const visiveis = ordem
   const fichas = useFichas(useMemo(() => visiveis.map((i) => i.solicitacaoId), [visiveis]))
 
   const abrir = (sid: string) => {
@@ -274,7 +274,7 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
   }
 
   const paginacao = (onPagina: (p: number) => void) => (
-    <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} totalItens={ordem.length} porPagina={porPagina} onPagina={onPagina} />
+    <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} totalItens={totalNaFila} porPagina={porPagina} onPagina={onPagina} />
   )
   const propsFila = {
     itens: visiveis,
@@ -396,11 +396,11 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
 
       <DetalheDialog
         sid={aberto}
-        item={ordem.find((i) => i.solicitacaoId === aberto) ?? null}
+        item={ordem.find((i) => i.solicitacaoId === aberto) ?? dia?.movimentos.find((i) => i.solicitacaoId === aberto) ?? null}
         data={data}
         hoje={hoje}
         primeiroDia={primeiroDia}
-        totalNaFila={ordem.length}
+        totalNaFila={totalNaFila}
         onClose={() => setAberto(null)}
       />
     </div>

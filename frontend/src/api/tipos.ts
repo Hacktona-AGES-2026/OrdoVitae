@@ -33,9 +33,30 @@ export type ItemFilaDTO = {
   critico: boolean | null
 }
 
+/** Envelope de toda coleção paginada da API. */
+export type Pagina<T> = {
+  itens: T[]
+  total: number
+  limite: number
+  offset: number
+}
+
+export type ResumoFilaDTO = {
+  naFila: number
+  saltos: number
+  foraDoPrazo: number
+  criticos: number
+}
+
+/** Fila de um dia, paginada: `ordem` é a página; `resumo` e `movimentos` valem para o dia inteiro. */
 export type DiaFilaDTO = {
   data: string | null
   ordem: ItemFilaDTO[]
+  total: number
+  limite: number
+  offset: number
+  resumo: ResumoFilaDTO
+  movimentos: ItemFilaDTO[]
 }
 
 export type DimensaoAchado = "gravidade" | "deterioracao" | "alerta"
@@ -81,6 +102,8 @@ export type SugestaoDTO = {
   previa: PreviaDTO | null
   /** Branch feat/justificativa-comparativa: quantos pacientes ele ultrapassa e por quê. Opcionais até o merge. */
   ultrapassados?: number
+  /** Texto final para o regulador (redigido pelo LLM a partir dos fatos; template curto se o LLM falhar). */
+  explicacao?: string
   justificativaComparativa?: string
 }
 

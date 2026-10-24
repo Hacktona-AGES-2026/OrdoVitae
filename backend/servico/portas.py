@@ -85,3 +85,4 @@ class Relogio(Protocol):                                      # data simulada, p
 
 class Redator(Protocol):                                      # justificativa por LLM, com template de fallback
     def justificar(self, s: Sugestao, av: Avaliacao) -> str: ...
+    def explicar(self, s: Sugestao) -> str: ...                # texto exibido com a prévia (por que mudou + por que ali)

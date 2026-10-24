@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 from datetime import date
 
 from . import config
-from .modelos import Sugestao, TipoSugestao
+from .modelos import Comparacao, Sugestao, TipoSugestao
 
 
 @dataclass
@@ -21,20 +21,27 @@ class ItemFila:
         """Quanto do prazo da classe já foi consumido (>1 = estourado)."""
         return (data_ref - self.data_entrada).days / config.PRAZO_DIAS[self.classe]
 
-    def score_clinico(self, data_ref: date) -> float:
-        """0–100: estado clínico aprovado + urgência da classe + espera ponderada pela classe."""
+    def componentes(self, data_ref: date) -> dict[str, float]:
+        """Pontos de cada parte no score final (somam o score): estado, classe, espera e o desconto do risco."""
         urg = config.URGENCIA_CLASSE[self.classe]
         espera = min((data_ref - self.data_entrada).days / config.TETO_ESPERA_DIAS, 1)
         espera *= config.ESPERA_PISO + (1 - config.ESPERA_PISO) * urg
-        bruto = ((config.W_PONTOS + config.W_PIORA) * self.ordo_clinico / 100
-                 + config.W_CLASSE * config.MULT_CLASSE * urg
-                 + config.W_ESPERA * espera)
         maximo = config.W_PONTOS + config.W_PIORA + config.W_CLASSE * config.MULT_CLASSE + config.W_ESPERA
-        return round(100 * bruto / maximo, 1)
+        partes = {"estado": (config.W_PONTOS + config.W_PIORA) * self.ordo_clinico / 100,
+                  "classe": config.W_CLASSE * config.MULT_CLASSE * urg,
+                  "espera": config.W_ESPERA * espera}
+        partes = {k: 100 * v / maximo for k, v in partes.items()}
+        partes["risco"] = -sum(partes.values()) * config.PESO_RISCO * self.risco
+        return {k: round(v, 1) for k, v in partes.items()}
+
+    def score_clinico(self, data_ref: date) -> float:
+        """0–100: estado clínico aprovado + urgência da classe + espera ponderada pela classe."""
+        c = self.componentes(data_ref)
+        return round(c["estado"] + c["classe"] + c["espera"], 1)
 
     def score(self, data_ref: date) -> float:
         """Score final que ordena a fila: clínico, descontado pelo risco."""
-        return round(self.score_clinico(data_ref) * (1 - config.PESO_RISCO * self.risco), 1)
+        return round(sum(self.componentes(data_ref).values()), 1)
 
 
 def critico(item: ItemFila, data_ref: date) -> bool:
@@ -100,6 +107,38 @@ def prever_posicoes(fila_oficial: list[ItemFila], sugestoes: list[Sugestao], dat
         if base is None:
             continue
         proposto = replace(base, classe=s.classe_para, ordo_clinico=s.ordo_clinico_para)
-        simulada = [replace(i) for i in fila_oficial if i.solicitacao_id != s.solicitacao_id] + [proposto]
-        s.posicao_para = next(i.posicao for i in ordenar(simulada, data_ref) if i.solicitacao_id == s.solicitacao_id)
+        simulada = ordenar([replace(i) for i in fila_oficial if i.solicitacao_id != s.solicitacao_id] + [proposto], data_ref)
+        s.posicao_para = next(i.posicao for i in simulada if i.solicitacao_id == s.solicitacao_id)
         s.ordo_para = proposto.score(data_ref)
+        s.componentes_para = proposto.componentes(data_ref)
+        _comparar(s, simulada, atual.posicao if atual else None, data_ref)
+
+
+def _comparar(s: Sugestao, simulada: list[ItemFila], pos_antes: int | None, data_ref: date, n: int = 3) -> None:
+    """Quem a sugestão ultrapassa (subindo) ou quem passa à frente dela (descendo), e por quê."""
+    antes = pos_antes or len(simulada) + 1
+    if s.posicao_para < antes:      # subiu: estava acima dele e agora fica abaixo
+        afetados = [i for i in simulada if s.posicao_para < i.posicao <= antes]
+        perto = afetados[:n]
+        verbo = "Passa à frente de"
+    elif s.posicao_para > antes:    # desceu: estava abaixo dele e agora fica acima
+        afetados = [i for i in simulada if antes <= i.posicao < s.posicao_para]
+        perto = afetados[-n:]
+        verbo = "Fica atrás de"
+    else:
+        return
+    s.ultrapassados = len(afetados)
+    s.comparacao = [Comparacao(i.solicitacao_id, i.classe, i.score(data_ref), i.componentes(data_ref)) for i in perto]
+    if not perto:
+        return
+    nomes = {"estado": "estado clínico", "classe": "classe SWALIS", "espera": "tempo de espera", "risco": "risco"}
+    viz = s.comparacao[0]
+    dif = {k: round(s.componentes_para[k] - viz.componentes[k], 1) for k in viz.componentes}
+    subiu = s.posicao_para < antes
+    decisivo = max(dif, key=lambda k: dif[k]) if subiu else min(dif, key=lambda k: dif[k])
+    num = lambda x: f"{x:+.1f}".replace(".", ",")
+    s.justificativa_comparativa = (
+        f"{'Passa à frente de' if subiu else 'Fica atrás de'} {len(afetados)} paciente(s). "
+        f"{'Logo abaixo' if subiu else 'Logo acima'} fica {viz.solicitacao_id} "
+        f"(classe {viz.classe}, score {str(viz.score).replace('.', ',')}): "
+        f"a diferença está no {nomes[decisivo]} ({num(dif[decisivo])} pontos).")

@@ -7,9 +7,10 @@ export const chaves = {
   datas: ["datas"] as const,
   pendentes: ["sugestoes", "pendente"] as const,
   decisao: (sid: string, hoje: string | null) => ["decisao", sid, hoje] as const,
-  fila: (data: string) => ["fila", data] as const,
+  fila: (data: string, offset = 0, limite = 0) => ["fila", data, offset, limite] as const,
   ficha: (sid: string) => ["ficha", sid] as const,
   sugestoes: ["sugestoes"] as const,
+  sugestoesDoDia: (data: string) => ["sugestoes", "dia", data] as const,
   alertas: ["alertas"] as const,
 }
 
@@ -43,33 +44,33 @@ export function useConfigurarSimulacao() {
   })
 }
 
-/** Foto de um dia passado não muda; a fila de hoje muda com aprovações e eventos. */
-function opcoesFila(data: string, hoje: string | null) {
+/** Uma página da fila de um dia. Foto de um dia passado não muda; a de hoje muda com aprovações e eventos. */
+function opcoesFila(data: string, hoje: string | null, offset: number, limite: number) {
   const ehHoje = data === hoje
   return {
-    queryKey: chaves.fila(data),
-    queryFn: () => api.fila(ehHoje ? undefined : data),
+    queryKey: chaves.fila(data, offset, limite),
+    queryFn: () => api.fila(ehHoje ? undefined : data, limite, offset),
     staleTime: ehHoje ? 30_000 : Infinity,
     retry: (n: number, e: Error) => !(e instanceof ErroApi && e.status === 404) && n < 2,
   }
 }
 
-export function useFilaDoDia(data: string | null, hoje: string | null) {
+export function useFilaDoDia(data: string | null, hoje: string | null, offset: number, limite: number) {
   return useQuery({
-    ...opcoesFila(data ?? "", hoje),
+    ...opcoesFila(data ?? "", hoje, offset, limite),
     enabled: !!data,
     placeholderData: keepPreviousData,
   })
 }
 
 /** Carrega antes os próximos dias da timeline para o player não travar. */
-export function preCarregarDias(qc: QueryClient, datas: string[], hoje: string | null) {
-  for (const d of datas) void qc.prefetchQuery(opcoesFila(d, hoje))
+export function preCarregarDias(qc: QueryClient, datas: string[], hoje: string | null, limite: number) {
+  for (const d of datas) void qc.prefetchQuery(opcoesFila(d, hoje, 0, limite))
 }
 
-/** O dia já respondeu (com fila ou com 404)? */
-export function diaCarregado(qc: QueryClient, data: string) {
-  const status = qc.getQueryState(chaves.fila(data))?.status
+/** A primeira página do dia já respondeu (com fila ou com 404)? */
+export function diaCarregado(qc: QueryClient, data: string, limite: number) {
+  const status = qc.getQueryState(chaves.fila(data, 0, limite))?.status
   return status === "success" || status === "error"
 }
 
@@ -98,11 +99,11 @@ export function useFichas(sids: string[]) {
 export function usePendentes() {
   return useQuery({
     queryKey: chaves.pendentes,
-    queryFn: () => api.sugestoes("pendente"),
+    queryFn: () => api.sugestoes({ status: "pendente" }),
     staleTime: 15_000,
-    select: (lista) => {
-      const porSid = new Map<string, typeof lista>()
-      for (const s of lista) porSid.set(s.solicitacaoId, [...(porSid.get(s.solicitacaoId) ?? []), s])
+    select: (pagina) => {
+      const porSid = new Map<string, typeof pagina.itens>()
+      for (const s of pagina.itens) porSid.set(s.solicitacaoId, [...(porSid.get(s.solicitacaoId) ?? []), s])
       return porSid
     },
   })
@@ -118,12 +119,19 @@ export function useDecisaoCompartilhada(sid: string | null, hoje: string | null)
   })
 }
 
-export function useSugestoes() {
-  return useQuery({ queryKey: chaves.sugestoes, queryFn: () => api.sugestoes(), staleTime: MINUTO })
+/** Sugestões criadas num dia (o painel "o que mudou neste dia"). */
+export function useSugestoesDoDia(data: string | null) {
+  return useQuery({
+    queryKey: chaves.sugestoesDoDia(data ?? ""),
+    queryFn: () => api.sugestoes({ criadaEm: data! }),
+    select: (pagina) => pagina.itens,
+    enabled: !!data,
+    staleTime: MINUTO,
+  })
 }
 
 export function useAlertas(ativo: boolean) {
-  return useQuery({ queryKey: chaves.alertas, queryFn: api.alertas, staleTime: MINUTO, enabled: ativo })
+  return useQuery({ queryKey: chaves.alertas, queryFn: () => api.alertas(), select: (p) => p.itens, staleTime: MINUTO, enabled: ativo })
 }
 
 function invalidarDepoisDeDecidir(qc: QueryClient, sid: string, hoje: string | null) {

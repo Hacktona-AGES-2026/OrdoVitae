@@ -3,7 +3,7 @@
 JSON em camelCase para casar com o front (`priorizacao.ts`: posicaoAnterior, diasEmFila, alemDoPrazo…).
 """
 from datetime import date
-from typing import Any
+from typing import Generic, TypeVar, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -42,6 +42,20 @@ class EntradaSimulacao(DTO):
 
 class EntradaRejeitar(DTO):
     comentario: str = ""
+
+
+class EntradaDecisao(DTO):
+    """PATCH /sugestoes/{id}: o regulador decide. Rejeitar exige comentário."""
+    status: Literal["aprovada", "rejeitada"]
+    comentario: str = ""
+
+
+class EntradaPatchSimulacao(DTO):
+    """PATCH /simulacao: muda o estado da simulação (campos ausentes ficam como estão)."""
+    auto_aprovar: bool | None = None
+    hoje: date | None = None                       # avança o relógio até esta data…
+    avancar_dias: int | None = Field(None, ge=1, le=3650)   # …ou N dias a partir de hoje
+    modo: Literal["passo", "rapido"] = "passo"     # passo: dia a dia com foto; rapido: aprovação automática, sem fotos
 
 
 # --- saída -----------------------------------------------------------------------------
@@ -86,6 +100,10 @@ class SugestaoDTO(DTO):
     decidida_por: str
     comentario: str
     previa: PreviaDTO | None = None
+    ultrapassados: int = 0
+    comparacao: list[dict] = []
+    justificativa_comparativa: str = ""
+    explicacao: str = ""
 
     @classmethod
     def de(cls, r: SugestaoRegistrada) -> "SugestaoDTO":
@@ -97,7 +115,11 @@ class SugestaoDTO(DTO):
                    motivos=[AchadoDTO.de(a) for a in s.motivos], criada_em=r.criada_em, decidida_em=r.decidida_em,
                    decidida_por=r.decidida_por, comentario=r.comentario,
                    previa=PreviaDTO(posicao_de=s.posicao_de, posicao_para=s.posicao_para,
-                                    score_de=s.ordo_de, score_para=s.ordo_para) if tem_previa else None)
+                                    score_de=s.ordo_de, score_para=s.ordo_para) if tem_previa else None,
+                   ultrapassados=s.ultrapassados, justificativa_comparativa=s.justificativa_comparativa,
+                   explicacao=s.explicacao,
+                   comparacao=[{"solicitacaoId": c.solicitacao_id, "classe": c.classe, "score": c.score,
+                                "componentes": c.componentes} for c in s.comparacao])
 
 
 class RecebimentoDTO(DTO):
@@ -128,9 +150,37 @@ class ItemFilaDTO(DTO):
         return cls(**vars(l), prazo=prazo, alem_do_prazo=max(0, l.dias_em_fila - prazo))
 
 
+T = TypeVar("T")
+
+
+class PaginaDTO(DTO, Generic[T]):
+    """Envelope de coleção: itens da página + total da coleção (com os filtros), limite e offset."""
+    itens: list[T]
+    total: int
+    limite: int
+    offset: int
+
+    @classmethod
+    def de(cls, pagina, conv) -> "PaginaDTO":
+        return cls(itens=[conv(x) for x in pagina], total=pagina.total, limite=pagina.limite, offset=pagina.offset)
+
+
+class ResumoFilaDTO(DTO):
+    na_fila: int
+    saltos: int
+    fora_do_prazo: int
+    criticos: int
+
+
 class DiaFilaDTO(DTO):
+    """Fila de um dia, paginada. `ordem` é a página; `resumo` e `movimentos` valem para o dia inteiro."""
     data: date | None
     ordem: list[ItemFilaDTO]
+    total: int
+    limite: int
+    offset: int
+    resumo: ResumoFilaDTO
+    movimentos: list[ItemFilaDTO]
 
 
 class PosicaoHistoricoDTO(DTO):

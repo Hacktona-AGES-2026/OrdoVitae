@@ -214,3 +214,6 @@ class RelogioMemoria:
 class RedatorFake:
     def justificar(self, s: Sugestao, av) -> str:
         return s.justificativa
+
+    def explicar(self, s: Sugestao) -> str:
+        return s.justificativa

@@ -64,12 +64,10 @@ export function FeedDia({ data, hoje, dia, primeiroDia, sugestoes, carregandoSug
 
   const movimentos = useMemo(() => {
     if (!dia || primeiroDia) return []
-    return dia.ordem
+    // maiores saltos do dia, já filtrados e ordenados pelo backend
+    return dia.movimentos
       .filter((i): i is ItemFilaDTO & { posicaoAnterior: number } => i.posicaoAnterior !== null)
       .map((i) => ({ item: i, delta: i.posicaoAnterior - i.posicao }))
-      .filter((m) => Math.abs(m.delta) >= LIMIAR_SALTO)
-      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
-      .slice(0, 12)
   }, [dia, primeiroDia])
 
   const fichas = useFichas(useMemo(() => [...new Set([...doDia.map((s) => s.solicitacaoId), ...movimentos.map((m) => m.item.solicitacaoId)])], [doDia, movimentos]))
@@ -128,6 +126,12 @@ export function FeedDia({ data, hoje, dia, primeiroDia, sugestoes, carregandoSug
                       </button>
                       <DecisaoSugestao sugestao={s} hoje={hoje} compacto />
                     </div>
+                    {/* por que o motor sugere: o regulador lê antes de aprovar */}
+                    {s.status === "pendente" && (s.explicacao || s.justificativa) && (
+                      <p className="border-t border-dashed border-foreground/10 pt-1.5 text-[11px] leading-relaxed">
+                        {s.explicacao || s.justificativa}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
