@@ -33,7 +33,11 @@ function invalidarSimulacao(qc: QueryClient) {
 /** Avança o relógio da simulação (o backend injeta as chegadas do dia e tira a foto). */
 export function useAvancarDia() {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (dias: number) => api.avancarDia(dias), onSuccess: () => invalidarSimulacao(qc) })
+  // dias = 0: até o próximo dia com sugestão
+  return useMutation({
+    mutationFn: (dias: number) => (dias === 0 ? api.proximaSugestao() : api.avancarDia(dias)),
+    onSuccess: () => invalidarSimulacao(qc),
+  })
 }
 
 export function useConfigurarSimulacao() {
@@ -138,7 +142,8 @@ function invalidarDepoisDeDecidir(qc: QueryClient, sid: string, hoje: string | n
   void qc.invalidateQueries({ queryKey: chaves.sugestoes })
   void qc.invalidateQueries({ queryKey: chaves.alertas })
   void qc.invalidateQueries({ queryKey: chaves.ficha(sid) })
-  if (hoje) void qc.invalidateQueries({ queryKey: chaves.fila(hoje) })
+  // prefixo ["fila", hoje]: chaves.fila(hoje) completaria offset/limite com 0 e não casaria com nenhuma página
+  if (hoje) void qc.invalidateQueries({ queryKey: ["fila", hoje] })
 }
 
 export function useAprovarSugestao(hoje: string | null) {

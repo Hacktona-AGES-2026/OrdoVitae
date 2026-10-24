@@ -1,7 +1,7 @@
 import { Bot, FileText } from "lucide-react"
 import { CartesianGrid, Line, LineChart, ReferenceDot, XAxis, YAxis } from "recharts"
 
-import { useFicha } from "@/api/consultas"
+import { useFicha, useFilaDoDia } from "@/api/consultas"
 import type { AchadoDTO, FichaDTO, ItemFilaDTO } from "@/api/tipos"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -63,8 +63,20 @@ export function DetalheDialog(props: Props) {
   )
 }
 
-function Conteudo({ sid, item, data, hoje, primeiroDia, totalNaFila }: Props & { sid: string }) {
+/** Linha do paciente na fila do dia quando ele não está na página aberta (ex.: aberto pelo painel do dia):
+ *  sem isso o cabeçalho mostrava "fora da fila" para quem estava, por exemplo, em 65º. */
+function useItemDoDia(sid: string, daPagina: ItemFilaDTO | null, ficha: FichaDTO | undefined, data: string, hoje: string | null) {
+  const posicao =
+    daPagina || !ficha ? null
+    : data === hoje ? (ficha.ativa ? ficha.posicao : null)
+    : (ficha.historico.find((h) => h.data === data)?.posicao ?? null)
+  const q = useFilaDoDia(posicao ? data : null, hoje, (posicao ?? 1) - 1, 1)
+  return daPagina ?? q.data?.ordem.find((i) => i.solicitacaoId === sid) ?? null
+}
+
+function Conteudo({ sid, item: daPagina, data, hoje, primeiroDia, totalNaFila }: Props & { sid: string }) {
   const { data: ficha, isPending, error } = useFicha(sid)
+  const item = useItemDoDia(sid, daPagina, ficha, data, hoje)
   const p = ficha ? paciente(ficha) : null
 
   return (
@@ -159,7 +171,7 @@ function Conteudo({ sid, item, data, hoje, primeiroDia, totalNaFila }: Props & {
                       </div>
                       <DecisaoSugestao sugestao={s} hoje={hoje} />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{s.justificativa}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{(s.status === "pendente" && s.explicacao) || s.justificativa}</p>
                     {s.comentario && <p className="text-xs italic">“{s.comentario}”</p>}
                   </li>
                 ))}

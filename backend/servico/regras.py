@@ -26,16 +26,26 @@ RISCO_PROCEDIMENTO_PADRAO = 3   # procedimento fora do catálogo conta como risc
 
 def sem_urgencia(dados: dict, achados: list[Achado]) -> bool:
     """Definição conservadora de "sem urgência clínica" do verificador oficial."""
-    dor = str(dados.get("intensidade_dor_eva") or "").strip()
     lim = str(dados.get("limitacao_funcional") or "").strip().lower() or "nenhuma"
     piora = any(a.codigo in EVENTOS_DE_PIORA and a.evidencia.fonte == "evento" and a.origem == Origem.REGRA
                 for a in achados)
     return (not oncologico(dados)
-            and (float(dor) if dor else 0) <= 3
+            and (dor_eva(dados) or 0) <= 3
             and lim in ("nenhuma", "leve")
             and cid(dados) not in CID_URGENTE
             and not piora
             and not KW_ALARME.search(str(dados.get("justificativa_clinica") or "").lower()))
+
+
+def dor_eva(dados: dict) -> float | None:
+    """EVA 0–10. Vazio ou ilegível ("N/A") → None (o verificador trata como 0); aceita vírgula decimal.
+
+    Não pode lançar exceção: roda para a fila inteira, e um cadastro sujo derrubaria todas as consultas."""
+    valor = str(dados.get("intensidade_dor_eva") or "").strip().replace(",", ".")
+    try:
+        return float(valor) if valor else None
+    except ValueError:
+        return None
 
 
 def oncologico(dados: dict) -> bool:

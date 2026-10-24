@@ -64,6 +64,9 @@ export const api = {
   /** Com SIMULADOR=1 no backend, injeta as chegadas do dataset de cada dia e fotografa a fila. */
   avancarDia: (dias = 1) => req<SimulacaoDTO>("/simulacao", { method: "PATCH", body: JSON.stringify({ avancarDias: dias }) }),
 
+  /** Avança até o próximo dia em que o motor cria uma sugestão (subir/descer/remover/alerta). */
+  proximaSugestao: () => req<SimulacaoDTO>("/simulacao", { method: "PATCH", body: JSON.stringify({ proximaSugestao: true }) }),
+
   /** Uma página da fila. Sem `data`: fila viva de hoje; com data passada: a foto daquele dia (404 se não houver). */
   fila: (data: string | undefined, limite: number, offset: number) =>
     req<DiaFilaDTO>(`/fila${query({ data, limite, offset })}`),

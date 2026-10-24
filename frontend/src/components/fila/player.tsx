@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, FastForward, Loader2, Pause, Play } from "lucide-react"
+import { ChevronLeft, ChevronRight, FastForward, Loader2, Pause, Play, SkipForward } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -27,6 +27,7 @@ type Props = {
   onFrame: (f: number) => void
   onTocar: () => void
   onSimular: () => void
+  onProximaSugestao: () => void
   onVelocidade: (ms: number) => void
 }
 
@@ -74,6 +75,16 @@ export function Player(p: Props) {
           >
             <FastForward />
             Simular +1 dia
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={p.simulando}
+            onClick={p.onProximaSugestao}
+            title="Avança a simulação até o próximo dia em que o motor sugere uma mudança"
+          >
+            <SkipForward />
+            Próxima sugestão
           </Button>
         </div>
         <div className="flex shrink-0 justify-end">

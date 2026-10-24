@@ -137,7 +137,7 @@ def extrair_solicitacao(
     dor_raw = sol.get("intensidade_dor_eva")
     if dor_raw is not None and str(dor_raw).strip() != "":
         try:
-            dor = int(dor_raw)
+            dor = int(float(str(dor_raw).strip().replace(",", ".")))   # "7", "7.0" ou "7,0"
             if dor >= 7:
                 achados.append(
                     Achado(

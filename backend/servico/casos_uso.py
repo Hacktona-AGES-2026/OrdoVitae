@@ -3,8 +3,9 @@
 Fluxo de referência: spikes/replay.py. Este módulo depende só de `motor`, `extracao` e das portas.
 """
 import csv
+import functools
 import io
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from collections.abc import Callable, Mapping
 from datetime import date, timedelta
 
@@ -22,6 +23,20 @@ from .portas import Redator, Relogio, UnidadeDeTrabalho
 REGULADOR = "regulador"
 SIMULACAO = "simulacao"            # autor das aprovações automáticas
 MUDANCA_DE_CLASSE = {T.CLASSIFICACAO_INICIAL, T.SUBIR, T.DESCER}
+_POOL_REDATOR = ThreadPoolExecutor(max_workers=8, thread_name_prefix="redator")   # sobrevive à requisição
+
+
+def _escrita(metodo):
+    """Invalida o cache da fila antes E depois da escrita: uma leitura concorrente (threadpool da API)
+    que montasse a fila antes do commit deixaria em cache a fila velha com a versão nova."""
+    @functools.wraps(metodo)
+    def envolvido(self, *args, **kwargs):
+        self.invalidar_cache()
+        try:
+            return metodo(self, *args, **kwargs)
+        finally:
+            self.invalidar_cache()
+    return envolvido
 
 
 class ServicoFila:
@@ -41,8 +56,8 @@ class ServicoFila:
 
     # --- integração ------------------------------------------------------------------
 
+    @_escrita
     def receber_solicitacao(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
-        self.invalidar_cache()
         sid = dados["solicitacao_id"]
         entrada = regras.data(dados["data_entrada_fila"])
         hoje = max(self.relogio.hoje(), entrada)
@@ -66,8 +81,8 @@ class ServicoFila:
             uow.commit()
         return self._depois_de_registrar(ids)
 
+    @_escrita
     def receber_evento(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
-        self.invalidar_cache()
         eid, sid = dados["evento_id"], dados["solicitacao_id"]
         hoje = self.relogio.hoje()
         with self.uow() as uow:
@@ -114,9 +129,9 @@ class ServicoFila:
 
     # --- regulador --------------------------------------------------------------------
 
+    @_escrita
     def aprovar_sugestao(self, id: int, por: str = REGULADOR, se_pendente: bool = False) -> SugestaoRegistrada:
         """Aplica a sugestão. `se_pendente`: usado pela aprovação automática, ignora o que já foi decidido."""
-        self.invalidar_cache()
         hoje = self.relogio.hoje()
         with self.uow() as uow:
             r = self._obter_pendente(uow, id, se_pendente)
@@ -138,8 +153,8 @@ class ServicoFila:
             uow.commit()
             return uow.sugestoes.obter(id)
 
+    @_escrita
     def rejeitar_sugestao(self, id: int, comentario: str, por: str = REGULADOR) -> SugestaoRegistrada:
-        self.invalidar_cache()
         if not (comentario or "").strip():
             raise ComentarioObrigatorio("rejeitar uma sugestão exige comentário")
         hoje = self.relogio.hoje()
@@ -153,9 +168,9 @@ class ServicoFila:
 
     # --- simulação ---------------------------------------------------------------------
 
+    @_escrita
     def avancar_dia(self, dias: int = 1) -> date:
         """Avança o relógio dia a dia, guardando uma foto da fila em cada dia."""
-        self.invalidar_cache()
         if dias < 1:
             raise TransicaoInvalida("dias deve ser >= 1")
         for _ in range(dias):
@@ -211,8 +226,7 @@ class ServicoFila:
                 foto = uow.historico.foto(data)
                 if not foto:
                     raise NaoEncontrado(f"sem foto da fila em {data.isoformat()}")
-                entradas = {sid: regras.data(uow.solicitacoes.obter(sid)["data_entrada_fila"])
-                            for sid in (x["solicitacao_id"] for x in foto)}
+                entradas = uow.solicitacoes.datas_entrada([x["solicitacao_id"] for x in foto])
                 return [LinhaFila(x["solicitacao_id"], x["posicao"], anterior.get(x["solicitacao_id"]), x["classe"],
                                   x["score"], (data - entradas[x["solicitacao_id"]]).days) for x in foto]
 
@@ -253,11 +267,17 @@ class ServicoFila:
                 raise NaoEncontrado(f"solicitação {sid}")
             estado, risco = uow.estados.obter(sid)
             posicao = next((i.posicao for i in self._fila(uow, hoje) if i.solicitacao_id == sid), None)
+            sugestoes = uow.sugestoes.da_solicitacao(sid)
+            pendentes = [r.sugestao for r in sugestoes if r.status == StatusSugestao.PENDENTE]
+            provisorio = any(s.tipo == T.CLASSIFICACAO_INICIAL for s in pendentes)   # mesmo critério de _provisorios
+            if pendentes:                       # a ficha mostra o mesmo texto redigido da lista, não o template cru
+                prever_posicoes(self._fila(uow, hoje), pendentes, hoje)
+                self._explicar(pendentes)
             return FichaPaciente(
                 sid, dados, ativa=posicao is not None, classe=estado.classe, ordo_clinico=estado.ordo_clinico,
-                provisorio=sid in self._provisorios(uow), risco=risco.valor, risco_motivo=risco.motivo,
+                provisorio=provisorio, risco=risco.valor, risco_motivo=risco.motivo,
                 posicao=posicao, achados=uow.achados.da_solicitacao(sid), historico=uow.historico.posicoes(sid),
-                sugestoes=[r for r in uow.sugestoes.listar() if r.solicitacao_id == sid])
+                sugestoes=sugestoes)
 
     def consultar_sugestao(self, id: int) -> SugestaoRegistrada:
         hoje = self.relogio.hoje()
@@ -370,11 +390,22 @@ class ServicoFila:
                                   regras.oncologico(sol), regras.sem_urgencia(sol, achados), risco.valor))
         return ordenar(itens, hoje)
 
+    MAX_EXPLICACOES = 24        # por consulta: as primeiras pendentes da página (3 rodadas do pool)
+    PRAZO_EXPLICACAO = 4.0      # segundos para a consulta inteira, não por chamada
+
     def _explicar(self, sugestoes: list[Sugestao]) -> None:
-        """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar)."""
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            for s, texto in zip(sugestoes, ex.map(self.redator.explicar, sugestoes)):
-                s.explicacao = texto
+        """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar).
+
+        Com prazo total: rede lenta (ou 200 pendentes) não trava a tela. O que passar do limite ou não
+        ficar pronto vai com o template e termina em segundo plano, enchendo o cache do redator."""
+        # subir/descer primeiro: são as que o regulador decide; classificação inicial fica por último
+        prioridade = sorted(sugestoes, key=lambda s: s.tipo not in (T.SUBIR, T.DESCER))[:self.MAX_EXPLICACOES]
+        futuros = {id(s): _POOL_REDATOR.submit(self.redator.explicar, s) for s in prioridade}
+        wait(futuros.values(), timeout=self.PRAZO_EXPLICACAO)
+        for s in sugestoes:
+            f = futuros.get(id(s))
+            pronto = f is not None and f.done() and f.exception() is None
+            s.explicacao = f.result() if pronto else self.redator.explicar_sem_llm(s)
 
     def _risco(self, dados: dict) -> AvaliacaoRisco:
         proc = self.risco_procedimento.get(dados.get("procedimento_id"), regras.RISCO_PROCEDIMENTO_PADRAO)

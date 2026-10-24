@@ -69,7 +69,9 @@ def alterar_simulacao(entrada: EntradaPatchSimulacao, svc: Servico):
     Com SIMULADOR=1, cada dia avançado recebe as chegadas do dataset."""
     if entrada.auto_aprovar is not None:
         svc.configurar_simulacao(entrada.auto_aprovar)
-    if entrada.avancar_dias is not None:
+    if entrada.proxima_sugestao and SIMULADOR_ATIVO:
+        obter_simulador(svc).ate_proxima_sugestao()
+    elif entrada.avancar_dias is not None:
         if SIMULADOR_ATIVO:
             obter_simulador(svc).avancar(entrada.avancar_dias)
         else:

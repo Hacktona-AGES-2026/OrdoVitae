@@ -46,6 +46,10 @@ class RepoSolicitacoesSQL:
                                                     SolicitacaoORM.procedimento_id == proc_id)).first()
         return dict(linha.dados) if linha else None
 
+    def datas_entrada(self, sids: list[str]) -> dict[str, date]:
+        q = select(SolicitacaoORM.solicitacao_id, SolicitacaoORM.data_entrada).where(SolicitacaoORM.solicitacao_id.in_(sids))
+        return {sid: entrada for sid, entrada in self.s.execute(q)}
+
 
 class RepoEventosSQL:
     def __init__(self, s: Session):
@@ -124,6 +128,10 @@ class RepoSugestoesSQL:
     def pendentes_de(self, sid: str) -> list[SugestaoRegistrada]:
         q = select(SugestaoORM).where(SugestaoORM.solicitacao_id == sid,
                                       SugestaoORM.status == StatusSugestao.PENDENTE.value).order_by(SugestaoORM.id)
+        return [cv.sugestao_de_linha(l) for l in self.s.scalars(q)]
+
+    def da_solicitacao(self, sid: str) -> list[SugestaoRegistrada]:
+        q = select(SugestaoORM).where(SugestaoORM.solicitacao_id == sid).order_by(SugestaoORM.id)
         return [cv.sugestao_de_linha(l) for l in self.s.scalars(q)]
 
     def listar(self, status: str | None = None) -> list[SugestaoRegistrada]:

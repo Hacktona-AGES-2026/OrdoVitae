@@ -46,6 +46,10 @@ class RepoSolicitacoesMemoria:
         return next((s for s in self.ativas()
                      if s.get("paciente_id") == pid and s.get("procedimento_id") == proc_id), None)
 
+    def datas_entrada(self, sids: list[str]) -> dict[str, date]:
+        return {sid: date.fromisoformat(str(self.b.solicitacoes[sid]["data_entrada_fila"])[:10])
+                for sid in sids if sid in self.b.solicitacoes}
+
 
 class RepoEventosMemoria:
     def __init__(self, banco: BancoMemoria):
@@ -113,6 +117,9 @@ class RepoSugestoesMemoria:
     def pendentes_de(self, sid: str) -> list[SugestaoRegistrada]:
         return [r for r in self.b.sugestoes.values()
                 if r.solicitacao_id == sid and r.status == StatusSugestao.PENDENTE]
+
+    def da_solicitacao(self, sid: str) -> list[SugestaoRegistrada]:
+        return [r for r in self.b.sugestoes.values() if r.solicitacao_id == sid]
 
     def listar(self, status: str | None = None) -> list[SugestaoRegistrada]:
         return [r for r in self.b.sugestoes.values() if status is None or r.status == StatusSugestao(status)]
@@ -216,4 +223,7 @@ class RedatorFake:
         return s.justificativa
 
     def explicar(self, s: Sugestao) -> str:
+        return s.justificativa
+
+    def explicar_sem_llm(self, s: Sugestao) -> str:
         return s.justificativa
