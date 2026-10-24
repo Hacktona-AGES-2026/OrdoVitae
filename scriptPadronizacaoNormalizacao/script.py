@@ -10,6 +10,7 @@ Script único de Normalização Sintática e Carga SQLite (Padrão definido pelo
 """
 import csv
 import re
+import shutil
 import sqlite3
 import unicodedata
 from pathlib import Path
@@ -148,7 +149,11 @@ def executar_pipeline(pasta_dataset: Path, arquivo_sqlite: Path, schema_sql_path
     with (pasta_dataset / "procedimentos.csv").open("r", encoding="utf-8-sig") as f:
         procs = [normalizar_procedimento_row(r) for r in csv.DictReader(f)]
 
-    with (pasta_dataset / "referencias" / "swalis.csv").open("r", encoding="utf-8-sig") as f:
+    swalis_file = pasta_dataset / "referencias" / "swalis.csv"
+    if not swalis_file.exists():
+        swalis_file = pasta_dataset / "swalis.csv"
+
+    with swalis_file.open("r", encoding="utf-8-sig") as f:
         swalis = [normalizar_swalis_row(r) for r in csv.DictReader(f)]
 
     # 2. Lê, normaliza e remove apenas duplicatas 100% idênticas na fila_cirurgica
@@ -172,10 +177,10 @@ def executar_pipeline(pasta_dataset: Path, arquivo_sqlite: Path, schema_sql_path
     with (pasta_dataset / "eventos_clinicos.csv").open("r", encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             norm = normalizar_evento_row(r)
-            # Remove os 9 eventos órfãos de solicitações já removidas da fila
+            # Remove eventos órfãos de solicitações fora da fila
             if norm["solicitacao_id"] not in ids_solicitacoes_validas:
                 continue
-            # Remove os 7 eventos 100% duplicados (mesmo conteúdo em todas as colunas de dados)
+            # Remove eventos 100% duplicados nos dados
             assinatura = tuple(v for k, v in norm.items() if k != "evento_id")
             if assinatura in eventos_assinaturas:
                 continue
@@ -183,11 +188,13 @@ def executar_pipeline(pasta_dataset: Path, arquivo_sqlite: Path, schema_sql_path
             eventos.append(norm)
 
     # 4. Grava no SQLite usando o schema.sql da equipe
+    arquivo_sqlite.parent.mkdir(parents=True, exist_ok=True)
     if arquivo_sqlite.exists():
         arquivo_sqlite.unlink()
 
     conn = sqlite3.connect(arquivo_sqlite)
     with conn:
+        conn.execute("PRAGMA foreign_keys = ON")
         conn.executescript(schema_sql_path.read_text(encoding="utf-8"))
         for nome_tabela, registros in (
             ("procedimentos", procs),
@@ -203,5 +210,41 @@ def executar_pipeline(pasta_dataset: Path, arquivo_sqlite: Path, schema_sql_path
                 for row in registros
             ]
             conn.executemany(sql, valores)
+
+        # Verificações de integridade
+        fk_errors = conn.execute("PRAGMA foreign_key_check").fetchall()
+        if fk_errors:
+            raise sqlite3.IntegrityError(f"Erros de foreign key: {fk_errors}")
+
+        integrity = conn.execute("PRAGMA integrity_check").fetchone()[0]
+        if integrity != "ok":
+            raise sqlite3.IntegrityError(f"Falha de integridade: {integrity}")
+
     conn.close()
     print(f"SQLite pronto: {len(procs)} procs | {len(fila)} fila | {len(eventos)} eventos | {len(swalis)} swalis")
+
+
+if __name__ == "__main__":
+    raiz = Path(__file__).resolve().parent.parent
+    candidatos_dataset = [
+        raiz,
+        raiz / "dataset",
+        raiz.parent,
+        raiz.parent / "dataset",
+    ]
+    pasta_dataset = next((p for p in candidatos_dataset if (p / "fila_cirurgica.csv").exists()), raiz)
+    arquivo_sqlite = raiz / "database" / "ordovitae.sqlite3"
+    schema_sql_path = raiz / "database" / "schema.sql"
+
+    # Garante que swalis.csv seja encontrado
+    candidatos_swalis = [
+        pasta_dataset / "referencias" / "swalis.csv",
+        pasta_dataset / "swalis.csv",
+        raiz / "referencias" / "swalis.csv",
+    ]
+    swalis_path = next((p for p in candidatos_swalis if p.exists()), None)
+    if swalis_path and not (pasta_dataset / "referencias" / "swalis.csv").exists():
+        (pasta_dataset / "referencias").mkdir(parents=True, exist_ok=True)
+        shutil.copy(swalis_path, pasta_dataset / "referencias" / "swalis.csv")
+
+    executar_pipeline(pasta_dataset, arquivo_sqlite, schema_sql_path)
