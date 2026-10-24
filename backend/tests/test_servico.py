@@ -259,3 +259,26 @@ class TestDecisaoCompartilhada(Base):
     def test_solicitacao_inexistente(self):
         with self.assertRaises(NaoEncontrado):
             self.svc.consultar_decisao_compartilhada("SOL-X")
+
+
+class RedatorLento(RedatorFake):
+    def explicar(self, s):
+        import time
+        time.sleep(2)
+        return "texto do LLM"
+
+    def explicar_sem_llm(self, s):
+        return "template"
+
+
+class TestPrazoDaExplicacao(Base):
+    def test_llm_lento_nao_trava_a_listagem_e_cai_no_template(self):
+        import time
+        self.svc.redator = RedatorLento()
+        self.svc.PRAZO_EXPLICACAO = 0.2
+        for i in range(3):
+            self.svc.receber_solicitacao(solicitacao(f"SOL-{i}", pid=f"PAC-{i}"))
+        t0 = time.perf_counter()
+        pendentes = self.svc.listar_sugestoes("pendente")
+        self.assertLess(time.perf_counter() - t0, 1.5)
+        self.assertEqual({r.sugestao.explicacao for r in pendentes}, {"template"})

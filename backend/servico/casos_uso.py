@@ -5,7 +5,7 @@ Fluxo de referência: spikes/replay.py. Este módulo depende só de `motor`, `ex
 import csv
 import functools
 import io
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from collections.abc import Callable, Mapping
 from datetime import date, timedelta
 
@@ -23,6 +23,7 @@ from .portas import Redator, Relogio, UnidadeDeTrabalho
 REGULADOR = "regulador"
 SIMULACAO = "simulacao"            # autor das aprovações automáticas
 MUDANCA_DE_CLASSE = {T.CLASSIFICACAO_INICIAL, T.SUBIR, T.DESCER}
+_POOL_REDATOR = ThreadPoolExecutor(max_workers=8, thread_name_prefix="redator")   # sobrevive à requisição
 
 
 def _escrita(metodo):
@@ -383,11 +384,20 @@ class ServicoFila:
                                   regras.oncologico(sol), regras.sem_urgencia(sol, achados), risco.valor))
         return ordenar(itens, hoje)
 
+    MAX_EXPLICACOES = 24        # por consulta: as primeiras pendentes da página (3 rodadas do pool)
+    PRAZO_EXPLICACAO = 6.0      # segundos para a consulta inteira, não por chamada
+
     def _explicar(self, sugestoes: list[Sugestao]) -> None:
-        """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar)."""
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            for s, texto in zip(sugestoes, ex.map(self.redator.explicar, sugestoes)):
-                s.explicacao = texto
+        """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar).
+
+        Com prazo total: rede lenta (ou 200 pendentes) não trava a tela. O que passar do limite ou não
+        ficar pronto vai com o template e termina em segundo plano, enchendo o cache do redator."""
+        futuros = [_POOL_REDATOR.submit(self.redator.explicar, s) for s in sugestoes[:self.MAX_EXPLICACOES]]
+        wait(futuros, timeout=self.PRAZO_EXPLICACAO)
+        for i, s in enumerate(sugestoes):
+            f = futuros[i] if i < len(futuros) else None
+            pronto = f is not None and f.done() and f.exception() is None
+            s.explicacao = f.result() if pronto else self.redator.explicar_sem_llm(s)
 
     def _risco(self, dados: dict) -> AvaliacaoRisco:
         proc = self.risco_procedimento.get(dados.get("procedimento_id"), regras.RISCO_PROCEDIMENTO_PADRAO)

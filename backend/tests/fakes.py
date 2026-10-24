@@ -221,3 +221,6 @@ class RedatorFake:
 
     def explicar(self, s: Sugestao) -> str:
         return s.justificativa
+
+    def explicar_sem_llm(self, s: Sugestao) -> str:
+        return s.justificativa

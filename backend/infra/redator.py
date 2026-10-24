@@ -82,6 +82,9 @@ class RedatorTemplate:
                           f"{s.ultrapassados} paciente(s); o mais próximo é {viz.solicitacao_id} (classe {viz.classe}).")
         return " ".join(partes) or s.justificativa
 
+    def explicar_sem_llm(self, s: Sugestao) -> str:
+        return RedatorTemplate.explicar(self, s)
+
 
 class RedatorLLM(RedatorTemplate):
     """DeepSeek (API compatível com OpenAI). `cliente`: função prompt → texto (os testes injetam uma falsa)."""
