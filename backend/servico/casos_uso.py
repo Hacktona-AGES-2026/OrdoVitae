@@ -385,7 +385,7 @@ class ServicoFila:
         return ordenar(itens, hoje)
 
     MAX_EXPLICACOES = 24        # por consulta: as primeiras pendentes da página (3 rodadas do pool)
-    PRAZO_EXPLICACAO = 6.0      # segundos para a consulta inteira, não por chamada
+    PRAZO_EXPLICACAO = 4.0      # segundos para a consulta inteira, não por chamada
 
     def _explicar(self, sugestoes: list[Sugestao]) -> None:
         """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar).

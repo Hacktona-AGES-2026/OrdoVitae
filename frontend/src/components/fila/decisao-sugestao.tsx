@@ -38,7 +38,9 @@ export function DecisaoSugestao({ sugestao, hoje, compacto }: { sugestao: Sugest
 
   if (sugestao.status !== "pendente") return <StatusChip s={sugestao} />
 
-  const ocupado = aprovar.isPending || rejeitar.isPending
+  // já decidida aqui: segura o botão até a lista recarregar (senão um 2º clique dá 409)
+  const decidida = [aprovar, rejeitar].some((m) => m.isSuccess && m.variables?.id === sugestao.id)
+  const ocupado = aprovar.isPending || rejeitar.isPending || decidida
   const erro = aprovar.error ?? rejeitar.error
 
   if (rejeitando)
