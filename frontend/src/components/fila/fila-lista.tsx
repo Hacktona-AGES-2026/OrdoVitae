@@ -63,13 +63,7 @@ function BlocoAprovacao({ s, hoje }: { s: SugestaoDTO; hoje: string | null }) {
             <span className="text-muted-foreground">· {s.motivos.map((m) => rotuloAchado(m.codigo)).join(", ")}</span>
           )}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.justificativa}</p>
-        {s.justificativaComparativa && (
-          <p className="mt-1 text-xs leading-relaxed">
-            {s.ultrapassados ? <b>Ultrapassa {s.ultrapassados} pacientes. </b> : null}
-            {s.justificativaComparativa}
-          </p>
-        )}
+        <p className="mt-1 text-xs leading-relaxed">{s.explicacao || s.justificativa}</p>
       </div>
       <DecisaoSugestao sugestao={s} hoje={hoje} />
     </div>

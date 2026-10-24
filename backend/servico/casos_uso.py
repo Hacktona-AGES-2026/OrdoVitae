@@ -4,10 +4,12 @@ Fluxo de referência: spikes/replay.py. Este módulo depende só de `motor`, `ex
 """
 import csv
 import io
+from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Callable, Mapping
 from datetime import date, timedelta
 
 from extracao import extrair_evento, extrair_solicitacao
+from motor import config
 from motor import AvaliacaoRisco, EstadoAprovado, ItemFila, avaliar, avaliar_risco, critico, decidir, ordenar, prever_posicoes
 from motor.modelos import Avaliacao, Dimensao, Origem, Sugestao, TipoSugestao as T
 from motor_secundario import AvaliacaoDecisaoCompartilhada, avaliar_decisao_compartilhada
@@ -30,10 +32,17 @@ class ServicoFila:
         self.relogio = relogio
         self.redator = redator
         self.risco_procedimento = risco_procedimento
+        self._versao = 0                                    # muda a cada escrita: invalida o cache da fila
+        self._cache_fila: tuple[tuple, list[ItemFila]] | None = None
+
+    def invalidar_cache(self) -> None:
+        """Chamado por toda escrita (e pela rota que zera o banco da simulação)."""
+        self._versao += 1
 
     # --- integração ------------------------------------------------------------------
 
     def receber_solicitacao(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
+        self.invalidar_cache()
         sid = dados["solicitacao_id"]
         entrada = regras.data(dados["data_entrada_fila"])
         hoje = max(self.relogio.hoje(), entrada)
@@ -58,6 +67,7 @@ class ServicoFila:
         return self._depois_de_registrar(ids)
 
     def receber_evento(self, dados: dict, resposta_llm: list[dict] | None = None) -> list[SugestaoRegistrada]:
+        self.invalidar_cache()
         eid, sid = dados["evento_id"], dados["solicitacao_id"]
         hoje = self.relogio.hoje()
         with self.uow() as uow:
@@ -106,6 +116,7 @@ class ServicoFila:
 
     def aprovar_sugestao(self, id: int, por: str = REGULADOR, se_pendente: bool = False) -> SugestaoRegistrada:
         """Aplica a sugestão. `se_pendente`: usado pela aprovação automática, ignora o que já foi decidido."""
+        self.invalidar_cache()
         hoje = self.relogio.hoje()
         with self.uow() as uow:
             r = self._obter_pendente(uow, id, se_pendente)
@@ -128,6 +139,7 @@ class ServicoFila:
             return uow.sugestoes.obter(id)
 
     def rejeitar_sugestao(self, id: int, comentario: str, por: str = REGULADOR) -> SugestaoRegistrada:
+        self.invalidar_cache()
         if not (comentario or "").strip():
             raise ComentarioObrigatorio("rejeitar uma sugestão exige comentário")
         hoje = self.relogio.hoje()
@@ -143,6 +155,7 @@ class ServicoFila:
 
     def avancar_dia(self, dias: int = 1) -> date:
         """Avança o relógio dia a dia, guardando uma foto da fila em cada dia."""
+        self.invalidar_cache()
         if dias < 1:
             raise TransicaoInvalida("dias deve ser >= 1")
         for _ in range(dias):
@@ -171,9 +184,24 @@ class ServicoFila:
 
     # --- consultas -------------------------------------------------------------------
 
+    LIMIAR_SALTO = 5            # mudança de posição que conta como "salto" no resumo do dia
+    MAX_MOVIMENTOS = 12
+
     def consultar_fila(self, data: date | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
-        """Fila oficial (viva ou foto de `data`), paginada. Posições são sempre as da fila inteira."""
-        return Pagina.de(self._linhas_fila(data), limite, offset)
+        """Fila oficial (viva ou foto de `data`), paginada. Posições são sempre as da fila inteira.
+
+        A página traz também o resumo do dia inteiro (`resumo`) e os maiores saltos (`movimentos`),
+        para o front não precisar da fila completa."""
+        linhas = self._linhas_fila(data)
+        pagina = Pagina.de(linhas, limite, offset)
+        saltos = sorted((l for l in linhas if l.posicao_anterior is not None
+                         and abs(l.posicao_anterior - l.posicao) >= self.LIMIAR_SALTO),
+                        key=lambda l: -abs(l.posicao_anterior - l.posicao))
+        pagina.movimentos = saltos[:self.MAX_MOVIMENTOS]
+        pagina.resumo = {"na_fila": len(linhas), "saltos": len(saltos),
+                         "fora_do_prazo": sum(l.dias_em_fila > config.PRAZO_DIAS[l.classe] for l in linhas),
+                         "criticos": sum(bool(l.critico) for l in linhas)}
+        return pagina
 
     def _linhas_fila(self, data: date | None) -> list[LinhaFila]:
         hoje = self.relogio.hoje()
@@ -239,16 +267,22 @@ class ServicoFila:
                 raise NaoEncontrado(f"sugestão {id}")
             if r.status == StatusSugestao.PENDENTE:
                 prever_posicoes(self._fila(uow, hoje), [r.sugestao], hoje)
+                self._explicar([r.sugestao])
             return r
 
-    def listar_sugestoes(self, status: str | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
-        """Paginada. As pendentes DA PÁGINA vêm com a prévia de posição (de/para), calculada na hora."""
+    def listar_sugestoes(self, status: str | None = None, limite: int | None = None, offset: int = 0,
+                         criada_em: date | None = None) -> Pagina:
+        """Paginada; `criada_em` filtra pelo dia. As pendentes DA PÁGINA vêm com a prévia de posição."""
         hoje = self.relogio.hoje()
         with self.uow() as uow:
-            pagina = Pagina.de(uow.sugestoes.listar(status), limite, offset)
+            todas = uow.sugestoes.listar(status)
+            if criada_em is not None:
+                todas = [r for r in todas if r.criada_em == criada_em]
+            pagina = Pagina.de(todas, limite, offset)
             pendentes = [r.sugestao for r in pagina if r.status == StatusSugestao.PENDENTE]
             if pendentes:
                 prever_posicoes(self._fila(uow, hoje), pendentes, hoje)
+                self._explicar(pendentes)
             return pagina
 
     def listar_alertas(self, tipo: str | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
@@ -316,6 +350,13 @@ class ServicoFila:
                 if r.sugestao.tipo == T.CLASSIFICACAO_INICIAL}
 
     def _fila(self, uow: UnidadeDeTrabalho, hoje: date) -> list[ItemFila]:
+        """Fila oficial, em cache até a próxima escrita ou mudança de dia (todas as leituras precisam dela)."""
+        chave = (hoje, self._versao)
+        if self._cache_fila is None or self._cache_fila[0] != chave:
+            self._cache_fila = (chave, self._montar_fila(uow, hoje))
+        return self._cache_fila[1]
+
+    def _montar_fila(self, uow: UnidadeDeTrabalho, hoje: date) -> list[ItemFila]:
         """Fila oficial: solicitações ativas com estado (aprovado ou provisório), ordenadas pelo motor."""
         estados = uow.estados.todos()
         ativas = [s for s in uow.solicitacoes.ativas() if s["solicitacao_id"] in estados]
@@ -328,6 +369,12 @@ class ServicoFila:
             itens.append(ItemFila(sid, estado.classe, estado.ordo_clinico, regras.data(sol["data_entrada_fila"]),
                                   regras.oncologico(sol), regras.sem_urgencia(sol, achados), risco.valor))
         return ordenar(itens, hoje)
+
+    def _explicar(self, sugestoes: list[Sugestao]) -> None:
+        """Texto final de cada sugestão pendente (LLM em paralelo; o redator cai no template se falhar)."""
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            for s, texto in zip(sugestoes, ex.map(self.redator.explicar, sugestoes)):
+                s.explicacao = texto
 
     def _risco(self, dados: dict) -> AvaliacaoRisco:
         proc = self.risco_procedimento.get(dados.get("procedimento_id"), regras.RISCO_PROCEDIMENTO_PADRAO)

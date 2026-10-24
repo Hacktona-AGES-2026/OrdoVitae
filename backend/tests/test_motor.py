@@ -150,7 +150,7 @@ class TestFila(unittest.TestCase):
         self.assertGreater(s.ordo_para, s.ordo_de)
         self.assertEqual(s.ultrapassados, 2)
         self.assertEqual([c.solicitacao_id for c in s.comparacao], ["X", "Y"])
-        self.assertIn("Passa à frente de 2", s.justificativa_comparativa)
+        self.assertIn("Passa à frente de 2 paciente(s). Logo abaixo fica X", s.justificativa_comparativa)
         self.assertAlmostEqual(sum(s.componentes_para.values()), s.ordo_para, delta=0.3)
 
     def test_quem_espera_ganha_de_recem_chegado_com_score_parecido(self):

@@ -134,9 +134,11 @@ def _comparar(s: Sugestao, simulada: list[ItemFila], pos_antes: int | None, data
     nomes = {"estado": "estado clínico", "classe": "classe SWALIS", "espera": "tempo de espera", "risco": "risco"}
     viz = s.comparacao[0]
     dif = {k: round(s.componentes_para[k] - viz.componentes[k], 1) for k in viz.componentes}
-    decisivo = max(dif, key=lambda k: dif[k]) if s.posicao_para < antes else min(dif, key=lambda k: dif[k])
-    lista = "; ".join(f"{c.solicitacao_id} (classe {c.classe}, score {c.score})" for c in s.comparacao)
+    subiu = s.posicao_para < antes
+    decisivo = max(dif, key=lambda k: dif[k]) if subiu else min(dif, key=lambda k: dif[k])
+    num = lambda x: f"{x:+.1f}".replace(".", ",")
     s.justificativa_comparativa = (
-        f"{verbo} {len(afetados)} paciente(s), entre eles {lista}. "
-        f"Diferença decisiva para {viz.solicitacao_id}: {nomes[decisivo]} ({dif[decisivo]:+} pontos; "
-        + ", ".join(f"{nomes[k]} {v:+}" for k, v in dif.items()) + ").")
+        f"{'Passa à frente de' if subiu else 'Fica atrás de'} {len(afetados)} paciente(s). "
+        f"{'Logo abaixo' if subiu else 'Logo acima'} fica {viz.solicitacao_id} "
+        f"(classe {viz.classe}, score {str(viz.score).replace('.', ',')}): "
+        f"a diferença está no {nomes[decisivo]} ({num(dif[decisivo])} pontos).")

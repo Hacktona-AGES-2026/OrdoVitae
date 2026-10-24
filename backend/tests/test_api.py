@@ -62,7 +62,7 @@ class TestApi(unittest.TestCase):
     def test_datas_com_foto(self):
         self.assertEqual(self.api.get("/simulacao/datas").json(), [])
         self.api.post("/integracao/solicitacoes", json={"dados": SOL})
-        self.api.post("/simulacao/avancar-dia", json={"dias": 2})
+        self.api.patch("/simulacao", json={"hoje": "2026-01-12"})
         self.assertEqual(self.api.get("/simulacao/datas").json(), ["2026-01-11", "2026-01-12"])
 
     def test_decisao_compartilhada(self):

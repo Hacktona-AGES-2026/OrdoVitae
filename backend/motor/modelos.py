@@ -131,3 +131,4 @@ class Sugestao:
     ultrapassados: int = 0
     comparacao: list[Comparacao] = field(default_factory=list)
     justificativa_comparativa: str = ""
+    explicacao: str = ""            # texto final para o regulador (redigido pelo LLM, ou template curto)

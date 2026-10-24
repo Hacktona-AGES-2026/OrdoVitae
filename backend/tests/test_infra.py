@@ -170,25 +170,37 @@ class TestConversores(unittest.TestCase):
 
 
 class ClienteFalso:
+    """Faz o papel do DeepSeek: devolve um texto fixo ou levanta um erro."""
     def __init__(self, texto=None, erro=None):
-        self.texto, self.erro = texto, erro
-        self.models = self
+        self.texto, self.erro, self.chamadas = texto, erro, 0
 
-    def generate_content(self, **_):
+    def __call__(self, prompt: str) -> str:
+        self.chamadas += 1
         if self.erro:
             raise self.erro
-        return type("Resposta", (), {"text": self.texto})()
+        return self.texto
 
 
 class TestRedator(unittest.TestCase):
-    def test_llm_cai_no_template_quando_inventa_referencia_ou_falha(self):
-        s, base = sugestao(), sugestao().justificativa
-        self.assertEqual(RedatorTemplate().justificar(s, None), base)
-        ok = "Paciente subiu de C para B após ida ao PS (EVT-1)."
-        self.assertEqual(RedatorLLM(cliente=ClienteFalso(ok)).justificar(s, None), ok)
-        self.assertEqual(RedatorLLM(cliente=ClienteFalso("Biópsia EVT-999 positiva.")).justificar(s, None), base)
-        self.assertEqual(RedatorLLM(cliente=ClienteFalso(erro=TimeoutError())).justificar(s, None), base)
-        self.assertEqual(RedatorLLM(chave="").justificar(s, None), base)
+    def test_justificar_e_sempre_o_template(self):
+        s = sugestao()
+        self.assertEqual(RedatorLLM(cliente=ClienteFalso("x")).justificar(s, None), s.justificativa)
+
+    def test_explicar_cai_no_template_quando_inventa_referencia_ou_falha(self):
+        s = sugestao()
+        base = RedatorTemplate().explicar(s)
+        ok = "Subiu por causa da ida ao PS registrada em EVT-1."
+        self.assertEqual(RedatorLLM(cliente=ClienteFalso(ok)).explicar(s), ok)
+        self.assertEqual(RedatorLLM(cliente=ClienteFalso("Biópsia EVT-999 positiva.")).explicar(s), base)
+        self.assertEqual(RedatorLLM(cliente=ClienteFalso(erro=TimeoutError())).explicar(s), base)
+        self.assertEqual(RedatorLLM(chave="").explicar(s), base)
+        self.assertEqual(RedatorLLM(cliente=ClienteFalso("<think>x</think>Ok, EVT-1.")).explicar(s), "Ok, EVT-1.")
+
+    def test_explicar_usa_cache(self):
+        cliente = ClienteFalso("Texto EVT-1.")
+        r, s = RedatorLLM(cliente=cliente), sugestao()
+        r.explicar(s), r.explicar(s)
+        self.assertEqual(cliente.chamadas, 1)
 
 
 class TestServicoSobreSQL(unittest.TestCase):

@@ -14,14 +14,10 @@ from servico.casos_uso import ServicoFila
 from servico.erros import NaoEncontrado, TransicaoInvalida
 
 from .dependencias import obter_servico, obter_simulador
-<<<<<<< HEAD
-from .dtos import (AlertaDTO, DiaFilaDTO, EntradaDecisao, EntradaIntegracao, EntradaPatchSimulacao, ErroDTO, FichaDTO,
-                   ItemFilaDTO, PaginaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
-=======
-from .dtos import (AlertaDTO, DecisaoCompartilhadaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
-                   EntradaSimulacao,
-                   ErroDTO, FichaDTO, ItemFilaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
->>>>>>> pr10
+from .dtos import (AlertaDTO, DecisaoCompartilhadaDTO, DiaFilaDTO, EntradaDecisao, EntradaIntegracao,
+                   EntradaPatchSimulacao, ErroDTO, FichaDTO, ItemFilaDTO, PaginaDTO, RecebimentoDTO, ResumoFilaDTO,
+                   SimulacaoDTO,
+                   SugestaoDTO)
 from .erros import registrar_handlers
 
 app = FastAPI(title="OrdoVitae", description="Priorização da fila cirúrgica: integração, simulação e regulador.")
@@ -73,7 +69,12 @@ def alterar_simulacao(entrada: EntradaPatchSimulacao, svc: Servico):
     Com SIMULADOR=1, cada dia avançado recebe as chegadas do dataset."""
     if entrada.auto_aprovar is not None:
         svc.configurar_simulacao(entrada.auto_aprovar)
-    if entrada.hoje is not None:
+    if entrada.avancar_dias is not None:
+        if SIMULADOR_ATIVO:
+            obter_simulador(svc).avancar(entrada.avancar_dias)
+        else:
+            svc.avancar_dia(entrada.avancar_dias)
+    elif entrada.hoje is not None:
         atual = svc.consultar_simulacao().hoje
         if SIMULADOR_ATIVO:
             sim = obter_simulador(svc)
@@ -98,6 +99,7 @@ if SIMULADOR_ATIVO:
     def reiniciar_simulacao(svc: Servico):
         """Zera o banco do sistema; o próximo avanço começa no dia zero do dataset."""
         zerar(svc.uow().fabrica)
+        svc.invalidar_cache()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -106,7 +108,8 @@ if SIMULADOR_ATIVO:
 def _dia_fila(svc: ServicoFila, data: date | None, limite: int, offset: int) -> DiaFilaDTO:
     p = svc.consultar_fila(data, limite, offset)
     return DiaFilaDTO(data=data or SimulacaoDTO.de(svc.consultar_simulacao()).hoje, ordem=[ItemFilaDTO.de(l) for l in p],
-                      total=p.total, limite=limite, offset=offset)
+                      total=p.total, limite=limite, offset=offset, resumo=ResumoFilaDTO(**p.resumo),
+                      movimentos=[ItemFilaDTO.de(l) for l in p.movimentos])
 
 
 @app.get("/fila", response_model=DiaFilaDTO, tags=["fila"], responses=ERROS)
@@ -145,13 +148,6 @@ def consultar_paciente(sid: str, svc: Servico):
     return FichaDTO.de(svc.consultar_paciente(sid))
 
 
-<<<<<<< HEAD
-@app.get("/sugestoes", response_model=PaginaDTO[SugestaoDTO], tags=["regulador"])
-def listar_sugestoes(svc: Servico, status: str | None = Query(None, description="pendente|aprovada|rejeitada|substituida"),
-                     limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
-    """Paginada. As pendentes da página vêm com prévia de posição e justificativa comparativa."""
-    return PaginaDTO[SugestaoDTO].de(svc.listar_sugestoes(status, limite, offset), SugestaoDTO.de)
-=======
 @app.get("/solicitacoes/{sid}/decisao-compartilhada", response_model=DecisaoCompartilhadaDTO, tags=["regulador"],
          responses=ERROS)
 def consultar_decisao_compartilhada(sid: str, svc: Servico):
@@ -160,10 +156,12 @@ def consultar_decisao_compartilhada(sid: str, svc: Servico):
     return DecisaoCompartilhadaDTO.de(av, usou_llm, svc.consultar_simulacao().hoje)
 
 
-@app.get("/sugestoes", response_model=list[SugestaoDTO], tags=["regulador"])
-def listar_sugestoes(svc: Servico, status: str | None = None):
-    return [SugestaoDTO.de(r) for r in svc.listar_sugestoes(status)]
->>>>>>> pr10
+@app.get("/sugestoes", response_model=PaginaDTO[SugestaoDTO], tags=["regulador"])
+def listar_sugestoes(svc: Servico, status: str | None = Query(None, description="pendente|aprovada|rejeitada|substituida"),
+                     criada_em: date | None = Query(None, alias="criadaEm", description="só as criadas neste dia"),
+                     limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
+    """Paginada. As pendentes da página vêm com prévia de posição e justificativa comparativa."""
+    return PaginaDTO[SugestaoDTO].de(svc.listar_sugestoes(status, limite, offset, criada_em), SugestaoDTO.de)
 
 
 @app.get("/sugestoes/{id}", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)

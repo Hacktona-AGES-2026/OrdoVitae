@@ -53,7 +53,8 @@ class EntradaDecisao(DTO):
 class EntradaPatchSimulacao(DTO):
     """PATCH /simulacao: muda o estado da simulação (campos ausentes ficam como estão)."""
     auto_aprovar: bool | None = None
-    hoje: date | None = None                       # avança o relógio até esta data
+    hoje: date | None = None                       # avança o relógio até esta data…
+    avancar_dias: int | None = Field(None, ge=1, le=3650)   # …ou N dias a partir de hoje
     modo: Literal["passo", "rapido"] = "passo"     # passo: dia a dia com foto; rapido: aprovação automática, sem fotos
 
 
@@ -102,6 +103,7 @@ class SugestaoDTO(DTO):
     ultrapassados: int = 0
     comparacao: list[dict] = []
     justificativa_comparativa: str = ""
+    explicacao: str = ""
 
     @classmethod
     def de(cls, r: SugestaoRegistrada) -> "SugestaoDTO":
@@ -115,6 +117,7 @@ class SugestaoDTO(DTO):
                    previa=PreviaDTO(posicao_de=s.posicao_de, posicao_para=s.posicao_para,
                                     score_de=s.ordo_de, score_para=s.ordo_para) if tem_previa else None,
                    ultrapassados=s.ultrapassados, justificativa_comparativa=s.justificativa_comparativa,
+                   explicacao=s.explicacao,
                    comparacao=[{"solicitacaoId": c.solicitacao_id, "classe": c.classe, "score": c.score,
                                 "componentes": c.componentes} for c in s.comparacao])
 
@@ -162,13 +165,22 @@ class PaginaDTO(DTO, Generic[T]):
         return cls(itens=[conv(x) for x in pagina], total=pagina.total, limite=pagina.limite, offset=pagina.offset)
 
 
+class ResumoFilaDTO(DTO):
+    na_fila: int
+    saltos: int
+    fora_do_prazo: int
+    criticos: int
+
+
 class DiaFilaDTO(DTO):
-    """Fila de um dia, paginada. `ordem` mantém o nome que o front já usa."""
+    """Fila de um dia, paginada. `ordem` é a página; `resumo` e `movimentos` valem para o dia inteiro."""
     data: date | None
     ordem: list[ItemFilaDTO]
     total: int
     limite: int
     offset: int
+    resumo: ResumoFilaDTO
+    movimentos: list[ItemFilaDTO]
 
 
 class PosicaoHistoricoDTO(DTO):

@@ -4,6 +4,7 @@ import type {
   DiaFilaDTO,
   ErroDTO,
   FichaDTO,
+  Pagina,
   SimulacaoDTO,
   StatusSugestao,
   SugestaoDTO,
@@ -41,6 +42,16 @@ async function req<T>(caminho: string, init?: RequestInit): Promise<T> {
   return resp.json() as Promise<T>
 }
 
+/** Máximo que a API devolve por página. */
+export const LIMITE_MAX = 200
+
+const query = (params: Record<string, string | number | undefined>) => {
+  const q = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") q.set(k, String(v))
+  const s = q.toString()
+  return s ? `?${s}` : ""
+}
+
 export const api = {
   simulacao: () => req<SimulacaoDTO>("/simulacao"),
 
@@ -48,27 +59,29 @@ export const api = {
   datas: () => req<string[]>("/simulacao/datas"),
 
   configurarSimulacao: (autoAprovar: boolean) =>
-    req<SimulacaoDTO>("/simulacao", { method: "PUT", body: JSON.stringify({ autoAprovar }) }),
+    req<SimulacaoDTO>("/simulacao", { method: "PATCH", body: JSON.stringify({ autoAprovar }) }),
 
   /** Com SIMULADOR=1 no backend, injeta as chegadas do dataset de cada dia e fotografa a fila. */
-  avancarDia: (dias = 1) => req<SimulacaoDTO>("/simulacao/avancar-dia", { method: "POST", body: JSON.stringify({ dias }) }),
+  avancarDia: (dias = 1) => req<SimulacaoDTO>("/simulacao", { method: "PATCH", body: JSON.stringify({ avancarDias: dias }) }),
 
-  /** Sem `data`: fila viva de hoje. Com data passada: a foto daquele dia (404 se não houver). */
-  fila: (data?: string) => req<DiaFilaDTO>(data ? `/fila?data=${data}` : "/fila"),
+  /** Uma página da fila. Sem `data`: fila viva de hoje; com data passada: a foto daquele dia (404 se não houver). */
+  fila: (data: string | undefined, limite: number, offset: number) =>
+    req<DiaFilaDTO>(`/fila${query({ data, limite, offset })}`),
 
   ficha: (sid: string) => req<FichaDTO>(`/solicitacoes/${encodeURIComponent(sid)}`),
 
   decisaoCompartilhada: (sid: string) =>
     req<DecisaoCompartilhadaDTO>(`/solicitacoes/${encodeURIComponent(sid)}/decisao-compartilhada`),
 
-  sugestoes: (status?: StatusSugestao) => req<SugestaoDTO[]>(status ? `/sugestoes?status=${status}` : "/sugestoes"),
+  sugestoes: (filtro: { status?: StatusSugestao; criadaEm?: string } = {}, limite = LIMITE_MAX, offset = 0) =>
+    req<Pagina<SugestaoDTO>>(`/sugestoes${query({ ...filtro, limite, offset })}`),
 
-  aprovar: (id: number) => req<SugestaoDTO>(`/sugestoes/${id}/aprovar`, { method: "POST" }),
+  aprovar: (id: number) => req<SugestaoDTO>(`/sugestoes/${id}`, { method: "PATCH", body: JSON.stringify({ status: "aprovada" }) }),
 
   rejeitar: (id: number, comentario: string) =>
-    req<SugestaoDTO>(`/sugestoes/${id}/rejeitar`, { method: "POST", body: JSON.stringify({ comentario }) }),
+    req<SugestaoDTO>(`/sugestoes/${id}`, { method: "PATCH", body: JSON.stringify({ status: "rejeitada", comentario }) }),
 
-  alertas: () => req<AlertaDTO[]>("/alertas"),
+  alertas: (limite = 50, offset = 0) => req<Pagina<AlertaDTO>>(`/alertas${query({ limite, offset })}`),
 
-  exportarCsvUrl: () => `${API_URL}/fila/exportar.csv`,
+  exportarCsvUrl: () => `${API_URL}/fila.csv`,
 }
