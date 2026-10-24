@@ -130,6 +130,10 @@ class RepoSugestoesSQL:
                                       SugestaoORM.status == StatusSugestao.PENDENTE.value).order_by(SugestaoORM.id)
         return [cv.sugestao_de_linha(l) for l in self.s.scalars(q)]
 
+    def da_solicitacao(self, sid: str) -> list[SugestaoRegistrada]:
+        q = select(SugestaoORM).where(SugestaoORM.solicitacao_id == sid).order_by(SugestaoORM.id)
+        return [cv.sugestao_de_linha(l) for l in self.s.scalars(q)]
+
     def listar(self, status: str | None = None) -> list[SugestaoRegistrada]:
         q = select(SugestaoORM).order_by(SugestaoORM.id)
         if status is not None:

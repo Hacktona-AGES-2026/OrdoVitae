@@ -118,6 +118,9 @@ class RepoSugestoesMemoria:
         return [r for r in self.b.sugestoes.values()
                 if r.solicitacao_id == sid and r.status == StatusSugestao.PENDENTE]
 
+    def da_solicitacao(self, sid: str) -> list[SugestaoRegistrada]:
+        return [r for r in self.b.sugestoes.values() if r.solicitacao_id == sid]
+
     def listar(self, status: str | None = None) -> list[SugestaoRegistrada]:
         return [r for r in self.b.sugestoes.values() if status is None or r.status == StatusSugestao(status)]
 

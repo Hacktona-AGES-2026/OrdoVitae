@@ -267,11 +267,14 @@ class ServicoFila:
                 raise NaoEncontrado(f"solicitação {sid}")
             estado, risco = uow.estados.obter(sid)
             posicao = next((i.posicao for i in self._fila(uow, hoje) if i.solicitacao_id == sid), None)
+            sugestoes = uow.sugestoes.da_solicitacao(sid)
+            provisorio = any(r.status == StatusSugestao.PENDENTE and r.sugestao.tipo == T.CLASSIFICACAO_INICIAL
+                             for r in sugestoes)                    # mesmo critério de _provisorios
             return FichaPaciente(
                 sid, dados, ativa=posicao is not None, classe=estado.classe, ordo_clinico=estado.ordo_clinico,
-                provisorio=sid in self._provisorios(uow), risco=risco.valor, risco_motivo=risco.motivo,
+                provisorio=provisorio, risco=risco.valor, risco_motivo=risco.motivo,
                 posicao=posicao, achados=uow.achados.da_solicitacao(sid), historico=uow.historico.posicoes(sid),
-                sugestoes=[r for r in uow.sugestoes.listar() if r.solicitacao_id == sid])
+                sugestoes=sugestoes)
 
     def consultar_sugestao(self, id: int) -> SugestaoRegistrada:
         hoje = self.relogio.hoje()
