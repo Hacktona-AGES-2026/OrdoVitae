@@ -4,7 +4,7 @@ import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from .contracts import _issue, _normalise_enum, _read_date
+from .contracts import _canonical_token, _issue, _normalise_enum, _read_date
 
 INTEGER_PATTERN = re.compile(r"^-?\d+$")
 
@@ -15,6 +15,48 @@ CID_PATTERN = re.compile(r"^[A-Z][0-9A-Z]{2,5}$")
 FORMULA_PREFIX_PATTERN = re.compile(r"^\s*[=+\-@＝＋－＠]")
 
 REFERENCE_DATE = date(2026, 10, 23)
+
+MUNICIPALITIES = {
+    "alegrete": "Alegrete",
+    "alvorada": "Alvorada",
+    "bage": "Bagé",
+    "cachoeira_do_sul": "Cachoeira do Sul",
+    "cachoeirinha": "Cachoeirinha",
+    "camaqua": "Camaquã",
+    "canoas": "Canoas",
+    "caxias_do_sul": "Caxias do Sul",
+    "charqueadas": "Charqueadas",
+    "cruz_alta": "Cruz Alta",
+    "eldorado_do_sul": "Eldorado do Sul",
+    "erechim": "Erechim",
+    "esteio": "Esteio",
+    "gravatai": "Gravataí",
+    "guaiba": "Guaíba",
+    "ijui": "Ijuí",
+    "lajeado": "Lajeado",
+    "montenegro": "Montenegro",
+    "novo_hamburgo": "Novo Hamburgo",
+    "osorio": "Osório",
+    "palmeira_das_missoes": "Palmeira das Missões",
+    "passo_fundo": "Passo Fundo",
+    "pelotas": "Pelotas",
+    "porto_alegre": "Porto Alegre",
+    "rio_grande": "Rio Grande",
+    "santa_cruz_do_sul": "Santa Cruz do Sul",
+    "santa_maria": "Santa Maria",
+    "santa_rosa": "Santa Rosa",
+    "santana_do_livramento": "Santana do Livramento",
+    "santo_angelo": "Santo Ângelo",
+    "sao_borja": "São Borja",
+    "sao_gabriel": "São Gabriel",
+    "sao_leopoldo": "São Leopoldo",
+    "sapucaia_do_sul": "Sapucaia do Sul",
+    "taquara": "Taquara",
+    "torres": "Torres",
+    "tramandai": "Tramandaí",
+    "uruguaiana": "Uruguaiana",
+    "viamao": "Viamão",
+}
 
 PRIMARY_KEYS = {
     "fila_cirurgica": ("solicitacao_id",),
@@ -118,6 +160,22 @@ def _normalise_field(value, field):
                     "O código não corresponde ao formato sintático CID esperado.",
                     "keep_original_for_review",
                 )
+            )
+
+    if field["name"] == "municipio":
+        canonical = MUNICIPALITIES.get(_canonical_token(value))
+        if canonical is None:
+            canonical = value.title()
+        if canonical != value:
+            value = canonical
+            issues.append(
+            _issue(
+                "municipality_canonicalized",
+                "info",
+                field["name"],
+                "Nome do município padronizado sem inferir outra localidade.",
+                "safe_format_normalization",
+            )
             )
 
     field_type = field["type"]

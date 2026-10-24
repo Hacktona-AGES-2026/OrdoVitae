@@ -22,6 +22,13 @@ responsabilidade. O ponto de entrada compatível continua sendo
    A resposta do modelo é uma recomendação de auditoria, não altera os valores.
 4. `cli.py` grava um CSV alternativo e um arquivo `.audit.jsonl`, recusando
    sobrescrever os arquivos de saída existentes.
+5. `run_ingestion.py` padroniza nomes conhecidos de municípios, elimina linhas
+   integralmente duplicadas e eventos com conteúdo repetido (ignorando
+   `evento_id`), e remove eventos sem vínculo confiável a um paciente. Solicitações
+   distintas do mesmo paciente para o mesmo procedimento permanecem separadas.
+   Cada exclusão fica registrada no campo `cleanup` da auditoria; os CSVs de
+   origem não são alterados. Eventos de solicitações fora da fila atual são
+   mantidos quando o `paciente_id` continua identificável.
 
 ## Executar
 

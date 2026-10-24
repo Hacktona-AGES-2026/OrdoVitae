@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "database"))
 
 import normalize_csv_review as normalizer
+from normalization.dataset_cleanup import clean_normalized_dataset
 from normalization import gemini_review
 
 
@@ -58,6 +59,8 @@ def make_valid_row(contract):
     for field in contract["fields"]:
         if field["nullable"]:
             row[field["name"]] = ""
+        elif field["name"] == "municipio":
+            row[field["name"]] = "Porto Alegre"
         elif field.get("enum"):
             row[field["name"]] = field["enum"][0]
         elif field["type"] == "integer":
@@ -101,6 +104,25 @@ class NormalizeCsvReviewTests(unittest.TestCase):
             {issue["code"] for issue in entry["issues"]},
         )
         self.assertIn("cid_canonicalized", {issue["code"] for issue in entry["issues"]})
+
+    def test_municipality_names_are_canonicalized(self):
+        contract = load_contract("fila_cirurgica")
+        row = make_valid_row(contract)
+        row["municipio"] = "SAO  LEOPOLDO"
+        headers = [field["name"] for field in contract["fields"]]
+
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "fila.csv"
+            write_csv(source, headers, [list(row.values())])
+            entry = normalizer.prepare_entries(
+                normalizer.read_entries(source, contract), contract
+            )[0]
+
+        self.assertEqual(entry["normalized"]["municipio"], "São Leopoldo")
+        self.assertIn(
+            "municipality_canonicalized",
+            {issue["code"] for issue in entry["issues"]},
+        )
 
     def test_missing_required_value_is_retained_and_never_inferred(self):
         contract = load_contract("procedimentos")
@@ -475,6 +497,133 @@ class NormalizeCsvReviewTests(unittest.TestCase):
                 normalizer._write_artifacts(output, audit, [entry], contract)
             self.assertEqual(output.read_text(encoding="utf-8"), "existing\n")
             self.assertFalse(audit.exists())
+
+    def test_dataset_cleanup_preserves_audit_and_removes_duplicates_and_orphans(self):
+        with tempfile.TemporaryDirectory() as folder:
+            dataset = Path(folder)
+
+            def write_table(relative_path, headers, rows):
+                path = dataset / relative_path
+                path.parent.mkdir(parents=True, exist_ok=True)
+                write_csv(path, headers, [list(row.values()) for row in rows])
+                audit_path = path.with_suffix(path.suffix + ".audit.jsonl")
+                audit_path.write_text(
+                    "".join(
+                        json.dumps(
+                            {
+                                "source_line": index + 2,
+                                "status": "normalized",
+                                "issues": [],
+                                "normalized": row,
+                            }
+                        )
+                        + "\n"
+                        for index, row in enumerate(rows)
+                    ),
+                    encoding="utf-8",
+                )
+                return path, audit_path
+
+            procedure = {"procedimento_id": "P1", "procedimento": "Teste"}
+            procedure_path, _ = write_table(
+                Path("procedimentos.csv"),
+                list(procedure),
+                [procedure, procedure],
+            )
+            queue_rows = [
+                {
+                    "solicitacao_id": "S1",
+                    "paciente_id": "PAC1",
+                    "procedimento_id": "P1",
+                    "municipio": "Porto Alegre",
+                },
+                {
+                    "solicitacao_id": "S2",
+                    "paciente_id": "PAC1",
+                    "procedimento_id": "P1",
+                    "municipio": "Porto Alegre",
+                },
+                {
+                    "solicitacao_id": "S1",
+                    "paciente_id": "PAC1",
+                    "procedimento_id": "P1",
+                    "municipio": "Porto Alegre",
+                },
+            ]
+            queue_path, _ = write_table(
+                Path("fila_cirurgica.csv"), list(queue_rows[0]), queue_rows
+            )
+            event_rows = [
+                {
+                    "evento_id": "E1",
+                    "solicitacao_id": "S1",
+                    "paciente_id": "PAC1",
+                    "data_evento": "2026-10-23",
+                    "tipo_evento": "hba1c",
+                    "resultado": "resultado",
+                },
+                {
+                    "evento_id": "E2",
+                    "solicitacao_id": "S1",
+                    "paciente_id": "PAC1",
+                    "data_evento": "2026-10-23",
+                    "tipo_evento": "hba1c",
+                    "resultado": "resultado",
+                },
+                {
+                    "evento_id": "E3",
+                    "solicitacao_id": "S3",
+                    "paciente_id": "PAC-X",
+                    "data_evento": "2026-10-23",
+                    "tipo_evento": "hba1c",
+                    "resultado": "resultado",
+                },
+                {
+                    "evento_id": "E4",
+                    "solicitacao_id": "S-ANTIGA",
+                    "paciente_id": "PAC1",
+                    "data_evento": "2026-10-22",
+                    "tipo_evento": "hba1c",
+                    "resultado": "resultado",
+                },
+            ]
+            event_path, event_audit_path = write_table(
+                Path("eventos_clinicos.csv"), list(event_rows[0]), event_rows
+            )
+            reference = {"classe": "A", "descricao": "Teste"}
+            reference_path, _ = write_table(
+                Path("referencias") / "swalis.csv",
+                list(reference),
+                [reference],
+            )
+
+            summary = clean_normalized_dataset(dataset)
+
+            self.assertEqual(summary["exact_duplicates_removed"], 2)
+            self.assertEqual(summary["duplicate_events_removed"], 1)
+            self.assertEqual(summary["orphan_events_removed"], 1)
+            with procedure_path.open(encoding="utf-8", newline="") as source:
+                self.assertEqual(len(list(csv.DictReader(source))), 1)
+            with queue_path.open(encoding="utf-8", newline="") as source:
+                self.assertEqual(len(list(csv.DictReader(source))), 2)
+            with event_path.open(encoding="utf-8", newline="") as source:
+                remaining_events = list(csv.DictReader(source))
+            self.assertEqual([row["evento_id"] for row in remaining_events], ["E1", "E4"])
+            audit_rows = [
+                json.loads(line)
+                for line in event_audit_path.read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual(len(audit_rows), 4)
+            self.assertEqual(
+                audit_rows[1]["cleanup"]["reason"],
+                "duplicate_event_payload",
+            )
+            self.assertEqual(
+                audit_rows[2]["cleanup"]["reason"],
+                "patient_not_found_in_surgical_queue",
+            )
+            self.assertTrue(audit_rows[3]["cleanup"]["retained_in_dataset"])
+            self.assertTrue(reference_path.is_file())
 
 
 if __name__ == "__main__":

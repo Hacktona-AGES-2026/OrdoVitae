@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from normalization.dataset_cleanup import clean_normalized_dataset
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATABASE_DIR = Path(__file__).resolve().parent
@@ -121,6 +123,14 @@ def run():
                 f"Saída ou auditoria não foi gerada para {source_path}."
             )
         review_required = review_required or result.returncode == 2
+
+    cleanup_summary = clean_normalized_dataset(normalized_dir)
+    print(
+        "Limpeza da cópia normalizada: "
+        f"{cleanup_summary['exact_duplicates_removed']} duplicatas exatas, "
+        f"{cleanup_summary['duplicate_events_removed']} eventos duplicados e "
+        f"{cleanup_summary['orphan_events_removed']} eventos órfãos removidos."
+    )
 
     database_path.parent.mkdir(parents=True, exist_ok=True)
     command = [

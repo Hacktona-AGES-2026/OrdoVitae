@@ -6,7 +6,7 @@
     "Normalize tipo_evento e resultado para os domínios definidos neste contrato.",
     "Use datas no formato AAAA-MM-DD e ponto como separador decimal.",
     "Preserve o conteúdo clínico de descricao; normalize somente espaços e erros de digitação inequívocos.",
-    "Eventos podem apontar para solicitações fora da fila atual; mantenha os registros."
+    "Mantenha eventos de solicitações fora da fila quando o paciente existir na fila atual; exclua eventos sem paciente identificável ou com conflito entre paciente e solicitação."
   ],
   "fields": [
     {"name": "evento_id", "type": "string", "nullable": false, "description": "Identificador único do evento.", "normalization": "Preserve exatamente."},

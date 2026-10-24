@@ -16,7 +16,7 @@
     {"name": "nome_paciente", "type": "string", "nullable": false, "description": "Nome sintético do paciente.", "normalization": "Normalize espaços; preserve grafia e acentuação informadas."},
     {"name": "sexo", "type": "string", "nullable": false, "enum": ["F", "M"], "description": "Sexo conforme o cadastro.", "normalization": "Use F ou M."},
     {"name": "idade", "type": "integer", "nullable": false, "minimum": 18, "maximum": 92, "description": "Idade em anos.", "normalization": "Retorne inteiro."},
-    {"name": "municipio", "type": "string", "nullable": false, "description": "Município de residência.", "normalization": "Normalize espaços e capitalização; não deduza nem substitua município."},
+    {"name": "municipio", "type": "string", "nullable": false, "description": "Município de residência.", "normalization": "Padronize grafia, acentuação e capitalização para municípios reconhecidos; não deduza nem substitua município."},
     {"name": "uf", "type": "string", "nullable": false, "description": "Unidade federativa.", "normalization": "Use a sigla oficial em maiúsculas."},
     {"name": "distancia_hospital_km", "type": "integer", "nullable": true, "minimum": 1, "maximum": 800, "description": "Distância aproximada até o hospital, em quilômetros.", "normalization": "Retorne inteiro; preserve ausência como vazio."},
     {"name": "procedimento_id", "type": "string", "nullable": false, "description": "Identificador do procedimento no catálogo.", "normalization": "Preserve exatamente."},
