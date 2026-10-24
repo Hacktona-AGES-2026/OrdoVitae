@@ -57,6 +57,19 @@ class TestApi(unittest.TestCase):
         self.assertTrue(csv.text.startswith("solicitacao_id,posicao,justificativa\nSOL-2,1,"))
         self.assertIsInstance(self.api.get("/alertas").json(), list)
 
+    def test_datas_com_foto(self):
+        self.assertEqual(self.api.get("/simulacao/datas").json(), [])
+        self.api.post("/integracao/solicitacoes", json={"dados": SOL})
+        self.api.post("/simulacao/avancar-dia", json={"dias": 2})
+        self.assertEqual(self.api.get("/simulacao/datas").json(), ["2026-01-11", "2026-01-12"])
+
+    def test_decisao_compartilhada(self):
+        self.api.post("/integracao/solicitacoes", json={"dados": SOL})
+        r = self.api.get("/solicitacoes/SOL-1/decisao-compartilhada")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual({"resumoMedico", "statusAdesao", "usouLlm", "dataReferencia", "itens"} - r.json().keys(), set())
+        self.assertEqual(self.api.get("/solicitacoes/SOL-X/decisao-compartilhada").status_code, 404)
+
     def test_erros_viram_status_http(self):
         [s] = self.api.post("/integracao/solicitacoes", json={"dados": SOL}).json()["sugestoes"]
         self.assertEqual(self.api.get("/solicitacoes/SOL-X").status_code, 404)

@@ -57,6 +57,10 @@ class RepoEventosMemoria:
     def existe(self, evento_id: str) -> bool:
         return evento_id in self.b.eventos
 
+    def da_solicitacao(self, sid: str) -> list[dict]:
+        evs = [dict(e) for e in self.b.eventos.values() if e.get("solicitacao_id") == sid]
+        return sorted(evs, key=lambda e: (e.get("data_evento") or "", e["evento_id"]))
+
 
 class RepoAchadosMemoria:
     def __init__(self, banco: BancoMemoria):
@@ -140,6 +144,9 @@ class RepoHistoricoMemoria:
     def posicoes(self, sid: str) -> list[tuple[date, int, float]]:
         return [(d, x["posicao"], x["score"]) for d, itens in sorted(self.b.fotos.items())
                 for x in itens if x["solicitacao_id"] == sid]
+
+    def datas(self) -> list[date]:
+        return sorted(self.b.fotos)
 
 
 class RepoAuditoriaMemoria:
