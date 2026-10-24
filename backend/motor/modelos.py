@@ -92,6 +92,15 @@ class Avaliacao:
         return self.gravidade + self.deterioracao
 
 
+@dataclass
+class Comparacao:
+    """Um paciente que a sugestão ultrapassa (ou que passa à frente), com o score decomposto."""
+    solicitacao_id: str
+    classe: str
+    score: float
+    componentes: dict[str, float]     # estado, classe, espera, risco (pontos do score final)
+
+
 class TipoSugestao(str, Enum):
     CLASSIFICACAO_INICIAL = "classificacao_inicial"
     SUBIR = "subir"
@@ -117,3 +126,8 @@ class Sugestao:
     ordo_para: float | None = None
     posicao_de: int | None = None
     posicao_para: int | None = None
+    # preenchidas por fila.prever_posicoes: quem ele ultrapassa (subir) ou quem passa à frente (descer)
+    componentes_para: dict[str, float] | None = None
+    ultrapassados: int = 0
+    comparacao: list[Comparacao] = field(default_factory=list)
+    justificativa_comparativa: str = ""

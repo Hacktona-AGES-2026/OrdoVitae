@@ -86,6 +86,9 @@ class SugestaoDTO(DTO):
     decidida_por: str
     comentario: str
     previa: PreviaDTO | None = None
+    ultrapassados: int = 0
+    comparacao: list[dict] = []
+    justificativa_comparativa: str = ""
 
     @classmethod
     def de(cls, r: SugestaoRegistrada) -> "SugestaoDTO":
@@ -97,7 +100,10 @@ class SugestaoDTO(DTO):
                    motivos=[AchadoDTO.de(a) for a in s.motivos], criada_em=r.criada_em, decidida_em=r.decidida_em,
                    decidida_por=r.decidida_por, comentario=r.comentario,
                    previa=PreviaDTO(posicao_de=s.posicao_de, posicao_para=s.posicao_para,
-                                    score_de=s.ordo_de, score_para=s.ordo_para) if tem_previa else None)
+                                    score_de=s.ordo_de, score_para=s.ordo_para) if tem_previa else None,
+                   ultrapassados=s.ultrapassados, justificativa_comparativa=s.justificativa_comparativa,
+                   comparacao=[{"solicitacaoId": c.solicitacao_id, "classe": c.classe, "score": c.score,
+                                "componentes": c.componentes} for c in s.comparacao])
 
 
 class RecebimentoDTO(DTO):
