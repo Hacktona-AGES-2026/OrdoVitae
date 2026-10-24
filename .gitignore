@@ -10,3 +10,6 @@ database/ordovitae_normalizado.sqlite3
 .github/*
 secrets/*
 docs/*
+!docs/apresentacao/
+!docs/apresentacao/index.html
+!docs/apresentacao/roteiro-3min.txt

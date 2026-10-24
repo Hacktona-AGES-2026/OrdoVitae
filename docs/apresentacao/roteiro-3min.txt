@@ -1,0 +1,55 @@
+ORDOVITAE — ROTEIRO DE APRESENTAÇÃO
+Duração prevista: 3 minutos, com pausas breves.
+
+SLIDE 1 — TIME E SOLUÇÃO
+0:00 a 0:30 | 30 segundos
+
+Olá, somos a equipe Bagre e este é o OrdoVitae, nosso projeto de apoio à priorização da fila cirúrgica do SUS.
+
+A proposta é organizar a fila conforme a necessidade de cada paciente, considerando sua condição clínica, a urgência, o tempo de espera e os riscos da cirurgia.
+
+Para combinar essas informações e explicar a prioridade, usamos uma pontuação chamada OrdoScore.
+
+[Passe para o slide 2.]
+
+SLIDE 2 — UM MOTOR EM DUAS ETAPAS
+0:30 a 1:20 | 50 segundos
+
+O motor funciona em duas etapas.
+
+A primeira avalia a necessidade clínica: quem precisa operar primeiro. Ela considera o estado do paciente, a classe de urgência SWALIS e o tempo que ele já está esperando.
+
+A segunda avalia o risco de operar. Para isso, combina o risco do paciente, representado pelo ASA, com o risco do procedimento.
+
+Essas duas avaliações formam o OrdoScore, que orienta a organização da fila.
+
+O cálculo segue regras determinísticas e reproduzíveis: com os mesmos dados, parâmetros e data de referência, o resultado é o mesmo. A inteligência artificial pode auxiliar na interpretação dos registros e na extração de achados clínicos. A classificação segue regras explícitas, e o regulador revisa as sugestões.
+
+[Passe para o slide 3.]
+
+SLIDE 3 — CÁLCULO DO ORDOSCORE
+1:20 a 3:00 | 1 minuto e 40 segundos
+
+O cálculo separa três medidas e depois combina os resultados.
+
+A primeira é o estado clínico, de zero a cem. Ele representa quão doente o paciente está hoje, considerando a gravidade, a deterioração e a chance estimada de piora.
+
+A segunda é o score clínico, também de zero a cem. Ele representa quem precisa operar primeiro. Soma três componentes: o estado clínico, a classe de urgência e o tempo de espera. Na configuração atual, essas partes contribuem com até 44, 40 e 16 pontos, respectivamente.
+
+A terceira medida é o risco cirúrgico, de zero a um. Ele representa o perigo de operar e corresponde à média entre o nível de risco do paciente e o nível de risco do procedimento.
+
+[Aponte para a fórmula.]
+
+No resultado final, o score clínico é multiplicado por um fator de ajuste de risco. Pela regra atual, esse ajuste reduz a pontuação em até vinte por cento.
+
+Por exemplo: um score clínico de 63,2 e um risco de 0,25 geram um desconto de cinco por cento. O OrdoScore final fica em 60.
+
+A fila considera o maior score primeiro. Em empate, prioriza quem entrou antes. Depois aplica uma proteção: pacientes oncológicos ficam à frente dos casos sem urgência.
+
+Os pesos apresentados são os parâmetros atuais do protótipo e precisam de validação clínica. O objetivo é apoiar o regulador com uma prioridade explicável e atualizada.
+
+PARA ENSAIAR — NÃO LER EM VOZ ALTA
+
+- Os tempos incluem pausas breves para apontar os elementos dos slides. Ensaie uma vez com cronômetro.
+- Leia 63,2 como “sessenta e três vírgula dois” e 0,25 como “zero vírgula vinte e cinco”.
+- O roteiro usa o cálculo do backend. O simulador da interface no repositório analisado usa outra lógica; confirme a versão antes de comparar números em uma demonstração.
