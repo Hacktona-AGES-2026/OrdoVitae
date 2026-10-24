@@ -210,5 +210,16 @@ class TestContagensDataset(unittest.TestCase):
         self.assertEqual(count_alvo_39, 39)
 
 
+
+class TestObservacaoComoEvento(unittest.TestCase):
+    def test_observacao_enviada_como_evento_usa_a_data_do_evento(self):
+        ev = {"evento_id": "OBS-SOL-1", "solicitacao_id": "SOL-1", "data_evento": "2026-09-10",
+              "tipo_evento": "observacao", "resultado": "", "descricao": "Familiar informa internacao recente na UPA."}
+        achados = extrair_evento(ev)
+        self.assertEqual([a.codigo for a in achados], [C.INTERNACAO])
+        self.assertEqual(achados[0].data_fato, date(2026, 9, 10))
+        self.assertEqual(achados[0].evidencia.fonte, "observacao")
+
+
 if __name__ == "__main__":
     unittest.main()

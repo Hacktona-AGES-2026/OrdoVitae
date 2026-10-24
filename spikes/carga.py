@@ -26,9 +26,28 @@ def cid(s):
     return s["cid_principal"].upper().replace(".", "").strip()
 
 
+def observacoes_como_eventos(fila, eventos):
+    """Decisão do time: a observação (sem data) chega junto do último evento do paciente;
+    sem eventos, no último dia (REF). Tira `observacoes` da solicitação para não vazar o futuro."""
+    ultimo = {}
+    for e in eventos:
+        ultimo[e["solicitacao_id"]] = max(ultimo.get(e["solicitacao_id"], ""), e["data_evento"])
+    obs = []
+    for s in fila:
+        texto = s["observacoes"].strip()
+        if texto:
+            obs.append({"evento_id": f"OBS-{s['solicitacao_id']}", "solicitacao_id": s["solicitacao_id"],
+                        "paciente_id": s["paciente_id"], "tipo_evento": "observacao", "resultado": "",
+                        "valor_numerico": "", "descricao": texto, "origem": "observacoes",
+                        "data_evento": max(ultimo.get(s["solicitacao_id"], REF.isoformat()), s["data_entrada_fila"])})
+        s["observacoes"] = ""
+    return obs
+
+
 def carregar():
     fila = ler("fila_cirurgica.csv")
     eventos = ler("eventos_clinicos.csv")
+    eventos += observacoes_como_eventos(fila, eventos)
     ids = {s["solicitacao_id"] for s in fila}
     achados = {s["solicitacao_id"]: extrair_solicitacao(s) for s in fila}
     for e in eventos:
