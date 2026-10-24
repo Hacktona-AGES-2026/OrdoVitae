@@ -40,6 +40,18 @@ class Simulador:
                 self.svc.fotografar_fila()
         return self.svc.relogio.hoje()
 
+    def ate_proxima_sugestao(self, max_dias: int = 366) -> date:
+        """Avança dia a dia (com foto) até o primeiro dia em que o motor cria uma sugestão visível
+        (subir, descer, remover ou alerta; classificação inicial não conta)."""
+        for _ in range(max_dias):
+            antes = self.svc.relogio.hoje()
+            self.avancar(1, foto=False)
+            regs = self._ultimas
+            self.svc.fotografar_fila()
+            if any(r.sugestao.tipo.value != "classificacao_inicial" for r in regs) or self.svc.relogio.hoje() == antes:
+                break
+        return self.svc.relogio.hoje()
+
     def pular_ate(self, alvo: date) -> date:
         """Avanço rápido até `alvo`, com aprovação automática ligada e sem fotos (só a do último dia)."""
         hoje = self.svc.relogio.hoje()
@@ -59,9 +71,10 @@ class Simulador:
         return self.svc.relogio.hoje()
 
     def _injetar(self, dia: date) -> None:
+        self._ultimas = []
         for c in self.fonte.chegadas(dia):
             receber = self.svc.receber_solicitacao if c.tipo == "solicitacao" else self.svc.receber_evento
-            receber(c.dados, c.resposta_llm)
+            self._ultimas += receber(c.dados, c.resposta_llm)
 
 
 def dias_entre(de: date, ate: date) -> list[date]:

@@ -56,6 +56,7 @@ class EntradaPatchSimulacao(DTO):
     hoje: date | None = None                       # avança o relógio até esta data…
     avancar_dias: int | None = Field(None, ge=1, le=3650)   # …ou N dias a partir de hoje
     modo: Literal["passo", "rapido"] = "passo"     # passo: dia a dia com foto; rapido: aprovação automática, sem fotos
+    proxima_sugestao: bool = False                 # avança até o próximo dia com sugestão (só com SIMULADOR=1)
 
 
 # --- saída -----------------------------------------------------------------------------

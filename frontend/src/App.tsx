@@ -387,6 +387,10 @@ function Painel({ hoje, datas, autoAprovar }: { hoje: string; datas: string[]; a
           setFrame(f)
         }}
         onTocar={alternar}
+        onProximaSugestao={() => {
+          pausar()
+          if (!avancar.isPending) avancar.mutate(0, { onSuccess: () => setFrameEscolhido(null) })
+        }}
         onSimular={() => {
           pausar()
           simular()

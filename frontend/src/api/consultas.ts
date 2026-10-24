@@ -33,7 +33,11 @@ function invalidarSimulacao(qc: QueryClient) {
 /** Avança o relógio da simulação (o backend injeta as chegadas do dia e tira a foto). */
 export function useAvancarDia() {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (dias: number) => api.avancarDia(dias), onSuccess: () => invalidarSimulacao(qc) })
+  // dias = 0: até o próximo dia com sugestão
+  return useMutation({
+    mutationFn: (dias: number) => (dias === 0 ? api.proximaSugestao() : api.avancarDia(dias)),
+    onSuccess: () => invalidarSimulacao(qc),
+  })
 }
 
 export function useConfigurarSimulacao() {
