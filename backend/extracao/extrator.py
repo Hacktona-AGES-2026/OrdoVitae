@@ -20,8 +20,14 @@ KW_ALARME = re.compile(
     r"suboclus|perda ponderal|disfagia|sepse|hidronefrose|perda de funcao|transfund|"
     r"hemoptise|rouquidao|linfonodo.*?(?:fixo|palpavel)|sangramento espontaneo|acamad|"
     r"ulcera de pressao|quedas de repeticao|glaucoma facomorfico|retencao de co2|"
-    r"dano neurologico|psa em elevacao|dessaturacao|angina em repouso|sincope|"
+    r"dano neurologico|psa em elevacao|dessaturacao|angina\s+inst[aá]vel|angina\s+em\s+repouso|sincope|"
     r"crescimento rapido|retencao urinaria aguda|massa anexial|ca-125",
+    re.IGNORECASE,
+)
+
+# Negações clínicas explícitas que NÃO podem virar sinal de alarme (ex: 'sem sinais de encarceramento')
+RE_NEGACAO_ALARME = re.compile(
+    r"\bsem\s+(?:sinais?\s+de\s+|evid[eê]ncia\s+de\s+)?(?:encarcer|estrangul|icter|sangrament|ulcera)\w*",
     re.IGNORECASE,
 )
 
@@ -200,9 +206,16 @@ def extrair_solicitacao(
         )
 
     if just:
-        matches = list(KW_ALARME.finditer(just))
-        if matches:
-            trechos = "; ".join(dict.fromkeys(m.group(0) for m in matches))
+        neg_spans = [m.span() for m in RE_NEGACAO_ALARME.finditer(just)]
+        valid_matches = []
+        for m in KW_ALARME.finditer(just):
+            # Ignora alarmes que estejam dentro de negação (ex: 'sem sinais de encarceramento')
+            if any(start <= m.start() < end for start, end in neg_spans):
+                continue
+            valid_matches.append(m.group(0))
+
+        if valid_matches:
+            trechos = "; ".join(dict.fromkeys(valid_matches))
             achados.append(
                 Achado(
                     codigo=C.SINAL_ALARME,
@@ -217,9 +230,68 @@ def extrair_solicitacao(
                 )
             )
 
-    # 5. Achados de LLM pré-computados (se houver)
+        # 4.1 'Internação recente' citada na justificativa clínica
+        if re.search(r"\binterna[cç][aã]o\s+recente\b", just, re.IGNORECASE):
+            achados.append(
+                Achado(
+                    codigo=C.INTERNACAO,
+                    dimensao=D.DETERIORACAO,
+                    solicitacao_id=sol_id,
+                    data_fato=data_fato,
+                    evidencia=Evidencia(
+                        fonte="solicitacao",
+                        ref=f"{sol_id}:justificativa_clinica",
+                        trecho="internacao recente",
+                    ),
+                )
+            )
+
+    # 5. Observações Administrativas e Clínicas da Fila Cirúrgica
+    obs = str(sol.get("observacoes") or "").strip()
+    if obs:
+        obs_lower = obs.lower()
+        ev_obs = Evidencia(fonte="observacao", ref=f"{sol_id}:observacoes", trecho=obs)
+
+        # 5.1 Relato de internação
+        if "interna" in obs_lower:
+            achados.append(
+                Achado(codigo=C.INTERNACAO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+        # 5.2 Relato de piora clínica
+        if "piora" in obs_lower:
+            achados.append(
+                Achado(codigo=C.PIORA_RELATADA, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+        # 5.3 Emagrecimento visível ou perda de peso
+        if "emagrec" in obs_lower or "perda de peso" in obs_lower or "perda ponderal" in obs_lower:
+            achados.append(
+                Achado(codigo=C.SINAL_ALARME, dimensao=D.GRAVIDADE, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+        # 5.4 Menção a idas ao Pronto-Socorro
+        if re.search(r"\b(?:foi\s+ao\s+ps|ao\s+ps\b|idas\s+a\s+emerg[eê]ncia)", obs_lower):
+            achados.append(
+                Achado(codigo=C.PRONTO_SOCORRO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+        # 5.5 Indício de saída da fila
+        if re.search(r"\b(?:desistiu|retirada\s+da\s+fila|operou\s+pelo\s+conv[eê]nio|outro\s+servi[cç]o|n[aã]o\s+deseja\s+mais\s+operar)\b", obs_lower):
+            achados.append(
+                Achado(codigo=C.SAIU_DA_FILA, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+        # 5.6 Perda de contato
+        if re.search(r"\b(?:telefone\s+fora\s+de\s+[aá]rea|n[uú]mero\s+n[aã]o\s+existe|mudou\s+de\s+endere[cç]o|sem\s+retorno|sem\s+sucesso)\b", obs_lower):
+            achados.append(
+                Achado(codigo=C.PERDA_CONTATO, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+            )
+
+    # 6. Achados de LLM pré-computados (se houver)
     if resposta_llm:
-        _anexar_achados_llm(achados, sol_id, just, resposta_llm)
+        texto_completo = f"{just}\n{obs}".strip()
+        _anexar_achados_llm(achados, sol_id, texto_completo, resposta_llm)
 
     return achados
 
