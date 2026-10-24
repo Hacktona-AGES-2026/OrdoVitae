@@ -1,5 +1,4 @@
 dataset/*
-docs/*
 *.env
 .venv/
 __pycache__/
@@ -8,3 +7,6 @@ database/dataset_normalizado/
 database/ordovitae_normalizado.sqlite3
 !docs/code_artifacts/
 !docs/code_artifacts/*.md
+.github/*
+secrets/*
+docs/*
