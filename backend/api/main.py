@@ -13,7 +13,7 @@ from fastapi.responses import PlainTextResponse
 from servico.casos_uso import ServicoFila
 
 from .dependencias import obter_servico, obter_simulador
-from .dtos import (AlertaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
+from .dtos import (AlertaDTO, DecisaoCompartilhadaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
                    EntradaSimulacao,
                    ErroDTO, FichaDTO, ItemFilaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
 from .erros import registrar_handlers
@@ -82,6 +82,12 @@ if SIMULADOR_ATIVO:
         return saida
 
 
+@app.get("/simulacao/datas", response_model=list[date], tags=["simulação"])
+def datas_com_foto(svc: Servico):
+    """Dias com foto da fila, em ordem: são os dias navegáveis da linha do tempo do front."""
+    return svc.datas_com_foto()
+
+
 @app.get("/simulacao", response_model=SimulacaoDTO, tags=["simulação"])
 def consultar_simulacao(svc: Servico):
     return SimulacaoDTO.de(svc.consultar_simulacao())
@@ -110,6 +116,14 @@ def exportar_fila(svc: Servico):
 @app.get("/solicitacoes/{sid}", response_model=FichaDTO, tags=["regulador"], responses=ERROS)
 def consultar_paciente(sid: str, svc: Servico):
     return FichaDTO.de(svc.consultar_paciente(sid))
+
+
+@app.get("/solicitacoes/{sid}/decisao-compartilhada", response_model=DecisaoCompartilhadaDTO, tags=["regulador"],
+         responses=ERROS)
+def consultar_decisao_compartilhada(sid: str, svc: Servico):
+    """Motor secundário: adesão, barreiras e preferências do paciente, com os dados recebidos até hoje."""
+    av, usou_llm = svc.consultar_decisao_compartilhada(sid)
+    return DecisaoCompartilhadaDTO.de(av, usou_llm, svc.consultar_simulacao().hoje)
 
 
 @app.get("/sugestoes", response_model=list[SugestaoDTO], tags=["regulador"])

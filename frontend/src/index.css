@@ -23,6 +23,8 @@
     --color-swalis-c: var(--swalis-c);
     --color-swalis-d: var(--swalis-d);
     --color-success: var(--success);
+    --color-decisao: var(--decisao);
+    --color-dados-insuf: var(--dados-insuf);
     --color-faixa-1: var(--faixa-1);
     --color-faixa-2: var(--faixa-2);
     --color-faixa-3: var(--faixa-3);
@@ -89,6 +91,8 @@
     --swalis-c: oklch(0.58 0.14 245);
     --swalis-d: oklch(0.6 0.03 260);
     --success: oklch(0.6 0.14 155);
+    --decisao: oklch(0.5 0.2 300);
+    --dados-insuf: oklch(0.55 0.05 250);
     --faixa-1: oklch(0.55 0.14 35);
     --faixa-2: oklch(0.66 0.14 70);
     --faixa-3: oklch(0.5 0.12 300);
@@ -135,6 +139,8 @@
     --swalis-c: oklch(0.7 0.13 245);
     --swalis-d: oklch(0.7 0.03 260);
     --success: oklch(0.74 0.15 155);
+    --decisao: oklch(0.74 0.15 300);
+    --dados-insuf: oklch(0.7 0.05 250);
     --faixa-1: oklch(0.68 0.14 35);
     --faixa-2: oklch(0.78 0.14 75);
     --faixa-3: oklch(0.7 0.12 300);

@@ -239,3 +239,23 @@ class TestConsultas(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDecisaoCompartilhada(Base):
+    def test_usa_so_o_que_chegou_e_remonta_observacoes(self):
+        self.svc.receber_solicitacao(solicitacao("SOL-1"))
+        av, usou_llm = self.svc.consultar_decisao_compartilhada("SOL-1")
+        self.assertFalse(av.elegivel_decisao_compartilhada)
+        self.assertFalse(usou_llm)
+
+        # regra 11: observação chega como evento "observacao" e volta para o campo observacoes
+        self.svc.receber_evento(evento("OBS-SOL-1", "SOL-1", "observacao", "", "2026-01-10",
+                                       descricao="Necessita TFD para deslocamento. Dificuldade de transporte."))
+        av, _ = self.svc.consultar_decisao_compartilhada("SOL-1")
+        self.assertTrue(av.elegivel_decisao_compartilhada)
+        self.assertEqual(av.status_adesao.value, "barreira_social")
+        self.assertIn("transporte", av.itens[0].trecho_evidencia.lower())
+
+    def test_solicitacao_inexistente(self):
+        with self.assertRaises(NaoEncontrado):
+            self.svc.consultar_decisao_compartilhada("SOL-X")

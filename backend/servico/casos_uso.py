@@ -9,7 +9,8 @@ from datetime import date, timedelta
 
 from extracao import extrair_evento, extrair_solicitacao
 from motor import AvaliacaoRisco, EstadoAprovado, ItemFila, avaliar, avaliar_risco, critico, decidir, ordenar, prever_posicoes
-from motor.modelos import Avaliacao, Dimensao, Sugestao, TipoSugestao as T
+from motor.modelos import Avaliacao, Dimensao, Origem, Sugestao, TipoSugestao as T
+from motor_secundario import AvaliacaoDecisaoCompartilhada, avaliar_decisao_compartilhada
 
 from . import regras
 from .erros import ComentarioObrigatorio, NaoEncontrado, TransicaoInvalida
@@ -156,6 +157,11 @@ class ServicoFila:
             uow.historico.salvar_foto(hoje, self._fila(uow, hoje))
             uow.commit()
 
+    def datas_com_foto(self) -> list[date]:
+        """Dias navegáveis na linha do tempo (os que têm foto da fila)."""
+        with self.uow() as uow:
+            return uow.historico.datas()
+
     def consultar_simulacao(self) -> Simulacao:
         return Simulacao(self.relogio.hoje(), self.relogio.auto_aprovar)
 
@@ -188,6 +194,24 @@ class ServicoFila:
                     (hoje - i.data_entrada).days, i.score_clinico(hoje), i.ordo_clinico, risco.valor, risco.motivo,
                     risco.asa_estimado, i.oncologico, i.solicitacao_id in provisorios, critico(i, hoje)))
             return linhas
+
+    def consultar_decisao_compartilhada(self, sid: str) -> tuple[AvaliacaoDecisaoCompartilhada, bool]:
+        """Motor secundário só com o que o sistema já recebeu até hoje (não vaza informação do futuro).
+
+        As observações chegam como eventos `observacao` (regra 11) e são remontadas no campo
+        `observacoes`; achados de origem LLM entram como `achados_llm`. Devolve (avaliação, usou_llm).
+        """
+        with self.uow() as uow:
+            dados = uow.solicitacoes.obter(sid)
+            if dados is None:
+                raise NaoEncontrado(f"solicitação {sid}")
+            eventos = uow.eventos.da_solicitacao(sid)
+            achados_llm = [{"codigo": a.codigo.value, "trecho_literal": a.evidencia.trecho}
+                           for a in uow.achados.da_solicitacao(sid) if a.origem == Origem.LLM]
+        observacoes = [e.get("descricao", "") for e in eventos if e.get("tipo_evento") == "observacao"]
+        solicitacao = dict(dados, observacoes=" ".join([dados.get("observacoes") or "", *observacoes]).strip())
+        clinicos = [e for e in eventos if e.get("tipo_evento") != "observacao"]
+        return avaliar_decisao_compartilhada(solicitacao, clinicos, achados_llm), bool(achados_llm)
 
     def consultar_paciente(self, sid: str) -> FichaPaciente:
         hoje = self.relogio.hoje()

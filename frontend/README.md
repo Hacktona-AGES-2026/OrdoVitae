@@ -1,8 +1,8 @@
 # OrdoVitae — Frontend
 
-Painel da fila cirúrgica priorizada. Mostra 30 dias de fila, recalculada dia a dia, com um player para avançar no tempo, o resumo do que mudou em cada dia e o detalhe de cada solicitação.
+Painel do regulador da fila cirúrgica. Mostra a **linha do tempo** da fila (uma foto por dia, guardada pelo backend), o que mudou em cada dia, as sugestões do motor para aprovar ou rejeitar e a ficha completa de cada solicitação.
 
-> **Estado atual:** ainda não há backend. Os dados vêm de um JSON estático e a priorização é calculada no próprio navegador. A seção [Integração com o backend](#integração-com-o-backend) explica o que trocar quando a API existir.
+Consome a API FastAPI de [`backend/`](../backend/README.md). Não há mais dados mockados no front.
 
 ## Stack
 
@@ -10,6 +10,7 @@ Painel da fila cirúrgica priorizada. Mostra 30 dias de fila, recalculada dia a 
 |---|---|
 | Build / dev server | Vite |
 | UI | React 19 + TypeScript |
+| Dados do servidor | TanStack Query (cache, pré-carregamento, mutações) |
 | Estilo | Tailwind CSS v4 (plugin `@tailwindcss/vite`, sem `tailwind.config`) |
 | Componentes | shadcn/ui (estilo `base-nova`, sobre Base UI) |
 | Gráficos | Recharts, via o componente `chart` do shadcn |
@@ -18,149 +19,144 @@ Painel da fila cirúrgica priorizada. Mostra 30 dias de fila, recalculada dia a 
 
 ## Como rodar
 
-```bash
-npm install
-npm run dev       # http://localhost:5173
-npm run build     # type-check (tsc -b) + build de produção
-npm run lint
-```
+1. **Backend com o simulador** (`SIMULADOR=1` liga as rotas que injetam o dataset dia a dia). Da raiz do repositório:
+   ```bash
+   python -m venv .venv
+   .venv/Scripts/python -m pip install -r requirements.txt
+   cd backend
+   SIMULADOR=1 ORDO_DB_URL=sqlite:///../database/dev.sqlite3 ../.venv/Scripts/python -m uvicorn api.main:app --port 8000
+   ```
+   Preparar a demo (em outro terminal):
+   ```bash
+   curl -X POST localhost:8000/simulacao/reiniciar
+   curl -X POST localhost:8000/simulacao/pular-ate -H "Content-Type: application/json" -d '{"data":"2026-09-15"}'   # ≈1 min
+   curl -X PUT  localhost:8000/simulacao -H "Content-Type: application/json" -d '{"autoAprovar":false}'
+   ```
+   Daí em diante a tela conduz: **Simular +1 dia** (ou play no último dia) avança a simulação, e com a aprovação automática
+   desligada as sugestões do motor aparecem nos cards para aprovar.
+2. **Front:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev        # http://localhost:5173
+   ```
+
+| Variável | Padrão | Para quê |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:8000` | Endereço da API (veja `.env.example`) |
+
+O backend libera CORS para `http://localhost:5173` (`ORDO_CORS`).
+
+Outros comandos: `npm run build` (type-check + build) e `npm run lint`.
 
 ## Estrutura de pastas
 
 ```
 src/
-├── main.tsx                 # ponto de entrada
-├── App.tsx                  # página única: estado global, layout, filtros, paginação
+├── main.tsx                 # ponto de entrada + QueryClientProvider
+├── App.tsx                  # estados de conexão + Painel (timeline, paginação)
 ├── index.css                # Tailwind + tokens de tema (claro/escuro)
-├── data/
-│   └── fila-30dias.json     # MOCK: fila + eventos (exportado do mockup.html)
+├── api/                     # ÚNICA camada que fala com o backend
+│   ├── tipos.ts               # contratos: espelho dos DTOs de backend/api/dtos.py
+│   ├── cliente.ts             # fetch, VITE_API_URL, ErroApi, um método por rota
+│   └── consultas.ts           # hooks TanStack Query (cache, prefetch, aprovar/rejeitar)
 ├── lib/
-│   ├── priorizacao.ts       # MOCK do backend: tipos + motor de priorização dos 30 dias
-│   ├── aprovacoes.ts        # aprovação das subidas (stub, pronto para API)
-│   └── utils.ts             # cn() — combinação de classes Tailwind
+│   ├── apresentacao.ts      # adaptadores DTO → tela (rótulos, ficha → Paciente, datas)
+│   └── utils.ts             # cn()
 └── components/
     ├── ui/                  # componentes shadcn (gerados pelo CLI)
-    ├── fila/                # componentes da tela da fila
-    │   ├── player.tsx         # player flutuante (dia, play/pausa, velocidade, slider)
-    │   ├── feed-dia.tsx       # resumo do dia: subidas (com aprovar), eventos, entradas, saídas
-    │   ├── filtros.tsx        # filtros de faixa, classe e prazo
-    │   ├── fila-lista.tsx     # visão em lista (cards retangulares de largura total)
-    │   ├── fila-cards.tsx     # visão em grade de cards
-    │   ├── paginacao.tsx      # paginação (exibida acima e abaixo da fila)
-    │   ├── detalhe-dialog.tsx # modal de detalhe da solicitação
-    │   └── marcadores.tsx     # peças visuais: faixa, movimento, prazo
-    ├── theme-toggle.tsx     # alternância claro/escuro
-    └── dashboard/           # LEGADO: primeiro protótipo, só o swalis.tsx ainda é usado
+    ├── fila/
+    │   ├── player.tsx           # player flutuante da timeline
+    │   ├── feed-dia.tsx         # resumo do dia: sugestões do motor + saltos na fila
+    │   ├── decisao-sugestao.tsx # status da sugestão e botões aprovar/rejeitar
+    │   ├── fila-lista.tsx       # visão em lista (padrão)
+    │   ├── fila-cards.tsx       # visão em grade
+    │   ├── paginacao.tsx        # paginação (acima e abaixo da fila)
+    │   ├── detalhe-dialog.tsx   # ficha: scores, histórico, achados, dados, sugestões
+    │   └── marcadores.tsx       # classe, movimento, prazo, indicadores
+    └── theme-toggle.tsx
 ```
 
-## Fluxo de dados
+**Regra de dependência:** componentes → `lib/apresentacao` e `api/consultas` → `api/cliente` → backend. Componentes não chamam `fetch` nem leem `ficha.dados` direto.
 
-```
-fila-30dias.json ──► lib/priorizacao.ts ──► diasFila: DiaFila[] ──► App.tsx ──► componentes
-  (mock)              (motor no navegador,    (30 dias, cada um     (frame atual,
-                       roda uma vez ao         com a fila ordenada)   filtros, página)
-                       carregar o módulo)
-```
+## Contratos da API usados
 
-1. `priorizacao.ts` lê o JSON, monta a lista de `Solicitacao` (cada uma com seus eventos) e calcula `diasFila` uma única vez, quando o módulo é carregado.
-2. `App.tsx` guarda o estado da tela: dia atual (`frame`), reprodução, visão (lista ou cards), filtros, página e item aberto no modal.
-3. Os componentes recebem os dados já prontos por props. Nenhum componente busca dados sozinho.
+| Rota | Uso na tela | Observações |
+|---|---|---|
+| `GET /simulacao` | Define "hoje" | `hoje = null` → simulação não começou |
+| `PUT /simulacao` `{autoAprovar}` | Chave "Aprovação automática" no cabeçalho | Desligada = sugestões ficam pendentes |
+| `GET /simulacao/datas` | Dias da linha do tempo | Dias com foto, em ordem |
+| `POST /simulacao/avancar-dia` `{dias}` | "Simular +1 dia" e play no último dia | Com `SIMULADOR=1`, injeta as chegadas do dataset e fotografa a fila |
+| `GET /fila` | Fila viva (último dia da timeline) | Traz todos os campos, incluindo `critico`, `oncologico`, `provisorio` e a composição do score |
+| `GET /fila?data=` | Foto de um dia passado | Só `posicao`, `posicaoAnterior`, `classe`, `score`, `diasEmFila`, `prazo`, `alemDoPrazo`; o resto vem `null`. **404** se não houver foto |
+| `GET /solicitacoes/{sid}` | Nome, CID, procedimento (lista) e modal de detalhe | A fila **não traz dados do paciente**: a ficha é buscada só para os itens da página visível e do painel |
+| `GET /sugestoes` | Painel do dia (filtrado por `criadaEm`) | Pendentes trazem `previa` (posição de → para) |
+| `GET /sugestoes?status=pendente` | Bloco de aprovação no card | Mostra a justificativa (e a comparativa, quando o backend mandar) |
+| `GET /solicitacoes/{sid}/decisao-compartilhada` | Card roxo no topo do modal | Motor secundário, calculado só com os dados recebidos até hoje |
+| `POST /sugestoes/{id}/aprovar` | Botão Aprovar | 409 se já decidida |
+| `POST /sugestoes/{id}/rejeitar` | Botão Rejeitar (no modal) | `comentario` obrigatório (422) |
+| `GET /fila/exportar.csv` | Link no cabeçalho | `fila_priorizada.csv` |
 
-### Modelo de dados
+### Como os contratos são tratados
 
-Os tipos estão em [`src/lib/priorizacao.ts`](src/lib/priorizacao.ts):
+- **Dados do paciente:** `ficha.dados` é a linha crua do CSV (tudo texto, caixa inconsistente). `paciente()` em `lib/apresentacao.ts` normaliza: idade e dor em número, CID com ponto (`K409` → `K40.9`), município em caixa de título.
+- **Fotos de dias passados:** os indicadores que vêm `null` não aparecem.
+- **Ficha vista num dia passado:** a ficha é o estado *atual*. Achados e sugestões posteriores ao dia exibido aparecem esmaecidos, com a marca "depois deste dia".
+- **Movimento:** `posicaoAnterior` comparada à posição atual. Até 4 posições é estável (arrasto da fila); 5 ou mais é salto. No primeiro dia da timeline não há dia anterior.
+- **Erros:** `ErroApi` carrega o status HTTP e o `detalhe` do backend. API fora do ar, simulação vazia, dia sem foto e erro genérico têm cada um sua tela.
 
-- **`Solicitacao`**: dados estáticos de uma solicitação (paciente, CID, procedimento, textos livres, flags derivadas como `oncologico` e `incerto`) e seus `eventos`.
-- **`Evento`**: biópsia, HbA1c, pronto-socorro, internação, exame de imagem, reavaliação, contato ou falta, com data e resultado.
-- **`ItemFila`**: a solicitação em um dia específico. Traz `posicao`, `posicaoAnterior`, `classe` (A1–D), `faixa` (1–5), `score`, `gravidade`, `diasEmFila`, `prazo` e `alemDoPrazo`.
-- **`DiaFila`**: `{ data, ordem: ItemFila[] }`, a fila completa e ordenada de um dia.
+### Cache (TanStack Query)
 
-### Regras de priorização (resumo)
+| Dado | Validade | Motivo |
+|---|---|---|
+| Foto de dia passado | Infinita | É imutável |
+| Fila de hoje | 30 s | Muda com eventos e aprovações |
+| Ficha | 5 min | Muda pouco; invalidada ao decidir uma sugestão |
+| Sugestões | 1 min | Invalidadas ao aprovar ou rejeitar |
 
-- **Faixa:**
+O player pré-carrega os 3 dias seguintes e só avança quando o próximo dia já chegou, então a reprodução não trava esperando a rede.
 
-  | Faixa | Descrição |
-  |---|---|
-  | 1 | Câncer confirmado (CID `C*`) |
-  | 2 | Suspeita de câncer (biópsia positiva ou lesão incerta) |
-  | 3 | Urgência clínica |
-  | 4 | Sintomas moderados |
-  | 5 | Eletivo sem urgência |
+## Recursos da demonstração
 
-- **Classe SWALIS e prazo:**
+- **Aprovar na lista:** card com sugestão pendente ganha borda âmbar e um bloco com tipo, classe de → para, prévia de posição, motivos e justificativa, com **Aprovar** e **Rejeitar** (comentário obrigatório).
+- **Cards mudando de posição:** `lib/use-flip.ts` anima a troca de posição (FLIP) quando o dia muda ou uma aprovação reordena a fila.
+- **Card da lista:** à esquerda, posição e os scores **clínico** e de **risco** lado a lado; flag **CRÍTICO** em vermelho (chip e borda); faixa **cinza-azulada** no rodapé quando há achado `DADOS_INSUFICIENTES`.
+- **Decisão compartilhada (roxo):** no modal, o resumo do motor secundário para o atendente, com o aviso de que é gerado com apoio de LLM e está sujeito a erros.
 
-  | Classe | Prazo |
-  |---|---|
-  | A1 | 15 dias |
-  | A2 | 21 dias |
-  | B | 60 dias |
-  | C | 180 dias |
-  | D | 360 dias |
-
-- **Índice (0–100):** gravidade clínica (até 60 pontos) mais tempo e atraso em relação ao prazo (até 40 pontos).
-- **Ordenação:** faixa → classe → índice → dias de espera → idade → id da solicitação.
-
-Essas regras são uma cópia temporária. O lugar definitivo delas é o backend.
-
-## Estado e interações (`App.tsx`)
+## Estado da tela (`App.tsx`)
 
 | Estado | O que controla |
 |---|---|
-| `frame` / `tocando` / `velocidade` | Dia exibido e reprodução automática (player) |
-| `visao` | `"lista"` (padrão, 15 por página) ou `"cards"` (24 por página) |
-| `filtros` | Faixas, classes e prazo (`todos`, `fora` ou `no_prazo`). Mudar o filtro volta para a página 1 |
-| `pagina` | Página atual, limitada ao total depois de filtrar |
-| `aberto` | Item exibido no modal. Abrir um item pausa o player |
+| `frame` / `tocando` / `velocidade` | Dia da timeline (abre em hoje) e reprodução |
+| `visao` | `"lista"` (15 por página) ou `"cards"` (24 por página) |
+| `pagina` | Página atual, limitada ao total de páginas do dia |
+| `aberto` | Solicitação no modal. Abrir pausa o player |
 
-Atalhos de teclado: **espaço** reproduz ou pausa; **← / →** voltam ou avançam um dia. Ficam desativados com o modal aberto.
-
-### Aprovação de subidas
-
-Uma *subida* é quando a solicitação ganha 5 posições ou mais de um dia para o outro. As subidas aparecem no resumo à esquerda, cada uma com o botão de aprovar.
-
-- **Status possíveis:** `pendente`, `enviando` ou `aprovado` (`useAprovacoes()` em [`src/lib/aprovacoes.ts`](src/lib/aprovacoes.ts)).
-- **Chave:** `data:solicitacao_id`, porque a mesma solicitação pode subir em dias diferentes.
-- **Hoje:** `APROVACAO_AUTOMATICA = true`, então tudo já nasce aprovado.
+Atalhos de teclado: **espaço** reproduz ou pausa; **← / →** voltam ou avançam um dia.
 
 ## Design system
 
-- **Componentes:** sempre os de `src/components/ui`. Para adicionar um novo:
+- **Componentes:** sempre os de `src/components/ui`. Para adicionar:
   ```bash
   npx shadcn@latest add <componente>
   ```
-  Os arquivos gerados importam `cn` do pacote `cn`, que é do próprio shadcn. Não troque esse import. Rode `npm run build` depois: o CLI às vezes gera um `import * as React` sem uso, que quebra o type-check.
-- **Cores:** sempre por token, nunca em hexadecimal no componente. Os tokens ficam em `src/index.css`, com valores para o tema claro (`:root`) e para o escuro (`.dark`):
+  Os arquivos importam `cn` do pacote `cn` (do próprio shadcn); não troque. Rode `npm run build` depois, porque o CLI às vezes gera um `import * as React` sem uso.
+- **Cores:** sempre por token de `src/index.css`, com valores para o claro (`:root`) e o escuro (`.dark`). A cor de cada item vem da **classe SWALIS**:
 
-  | Token | Uso | Classes |
-  |---|---|---|
-  | `--faixa-1` … `--faixa-5` | Faixas de prioridade | `bg-faixa-1`, `text-faixa-3`… |
-  | `--swalis-a1` … `--swalis-d` | Classes SWALIS | `bg-swalis-a1/15`… |
-  | `--success`, `--destructive` | No prazo / fora do prazo, subida / descida | `text-success`, `bg-destructive/10`… |
-  | `--chart-1` … `--chart-5` | Gráficos | `var(--chart-1)` |
+  | Token | Uso |
+  |---|---|
+  | `--swalis-a1` … `--swalis-d` | Classe do item (barra lateral, badge, legenda) |
+  | `--success` / `--destructive` | Subida / descida, no prazo / fora do prazo |
+  | `--chart-*` | Gráficos |
 
-- **Tema:** a classe `dark` no `<html>` liga o escuro. Um script em `index.html` aplica o tema antes de a página renderizar, para não piscar. O `ThemeToggle` salva a escolha no `localStorage`.
-- **Idioma:** a interface e os nomes de domínio ficam em português (`solicitacoes`, `diasEmFila`, `faixa`).
-
-## Integração com o backend
-
-Hoje, `lib/priorizacao.ts` faz o papel do backend. Para integrar:
-
-1. **Contrato:** a API deve devolver os dias da fila no formato `DiaFila[]`, mais as `Solicitacao` referenciadas por `idx` ou id. A tela só lê esses tipos; o motor de cálculo não é usado por ela.
-2. **Trocar a fonte:** substituir `solicitacoes` e `diasFila` por dados vindos da API, carregados no `App` (por exemplo com um hook `useFila()` que tenha estado de carregamento e erro).
-3. **Remover o mock:** apagar `src/data/fila-30dias.json` e o motor de `priorizacao.ts` (`classificar`, `gravidade`, `calcularDias`…). Mantenha os tipos e os textos de exibição (`FAIXA_NOME`, `TIPO_EVENTO_LABEL`, `PRAZO`).
-4. **Justificativas:** hoje `justificar()` e `sinaisTexto()` montam os textos no front. O ideal é que venham prontos da API, junto com o item.
-5. **Aprovações** (`lib/aprovacoes.ts`):
-   1. Trocar `APROVACAO_AUTOMATICA` para `false`.
-   2. Carregar o status vindo do servidor em `statusInicial`.
-   3. Implementar o POST em `enviarAprovacao`. O endpoint sugerido é `POST /api/fila/subidas/{chave}/aprovar`.
-6. **Paginação e filtros:** hoje são feitos no cliente, sobre cerca de 900 itens por dia. Se o volume crescer, passe-os para a API como parâmetros de consulta.
-
-### Sobre os dados de origem
-
-O script `scriptPadronizacaoNormalizacao/script.py` normaliza os CSVs e grava um SQLite com `procedimentos`, `fila_cirurgica`, `eventos_clinicos` e `referencias_swalis`. Ele **não** calcula priorização: classe, faixa, índice e posição diária ainda precisam ser implementados no backend, a partir dessa base.
+- **Tema:** a classe `dark` no `<html>`; um script no `index.html` aplica o tema antes de renderizar.
+- **Idioma:** interface e nomes de domínio em português; os tipos de `api/tipos.ts` seguem os nomes do backend.
 
 ## Pendências conhecidas
 
-- `components/dashboard/` e `data/mock-fila.ts` são o primeiro protótipo e não são mais usados, exceto `dashboard/swalis.tsx` (o badge de classe). Mova esse arquivo para `components/fila/` e apague o resto.
-- O bundle tem cerca de 700 kB, a maior parte do Recharts e do JSON do mock. O aviso de tamanho no build é esperado até o mock sair.
-- Não há testes automatizados ainda.
+- **Simulador externo.** A tela atualiza quando ela mesma avança a simulação. Se outro processo chamar `avancar-dia`, a tela só percebe ao recarregar (falta `refetchInterval` ou SSE).
+- **Justificativa comparativa.** `ultrapassados` e `justificativaComparativa` vêm da branch `feat/justificativa-comparativa`; o card já mostra quando existirem.
+- **Fichas em lote.** Cada item visível custa uma chamada `/solicitacoes/{sid}` (≈350 ms). Um endpoint com os dados de exibição na própria fila, ou fichas em lote, eliminaria isso.
+- **Alertas.** `GET /alertas` já está no cliente (`useAlertas`), mas ainda não tem tela.
+- **Bundle.** Tem cerca de 860 kB, a maior parte do Recharts; dá para dividir com `import()` no modal.
+- **Testes.** Não há testes automatizados ainda.
