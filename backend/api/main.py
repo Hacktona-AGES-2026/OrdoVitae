@@ -12,8 +12,9 @@ from fastapi.responses import PlainTextResponse
 
 from servico.casos_uso import ServicoFila
 
-from .dependencias import obter_servico
-from .dtos import (AlertaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaRejeitar, EntradaSimulacao,
+from .dependencias import obter_servico, obter_simulador
+from .dtos import (AlertaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
+                   EntradaSimulacao,
                    ErroDTO, FichaDTO, ItemFilaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
 from .erros import registrar_handlers
 
@@ -23,6 +24,7 @@ app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("ORDO_CORS", "ht
 registrar_handlers(app)
 
 Servico = Annotated[ServicoFila, Depends(obter_servico)]
+SIMULADOR_ATIVO = os.environ.get("SIMULADOR") == "1"     # config de ambiente; desligado em produção
 ERROS = {404: {"model": ErroDTO}, 409: {"model": ErroDTO}, 422: {"model": ErroDTO}}
 
 
@@ -42,8 +44,42 @@ def receber_evento(entrada: EntradaIntegracao, svc: Servico):
 
 @app.post("/simulacao/avancar-dia", response_model=SimulacaoDTO, tags=["simulação"], responses=ERROS)
 def avancar_dia(entrada: EntradaAvancarDia, svc: Servico):
-    svc.avancar_dia(entrada.dias)
+    """Com SIMULADOR=1, injeta as chegadas de cada dia do dataset antes de fotografar a fila."""
+    if SIMULADOR_ATIVO:
+        obter_simulador(svc).avancar(entrada.dias)
+    else:
+        svc.avancar_dia(entrada.dias)
     return SimulacaoDTO.de(svc.consultar_simulacao())
+
+
+if SIMULADOR_ATIVO:
+    from infra.db import zerar
+    from servico.erros import NaoEncontrado
+    from servico.simulador import dias_entre
+
+    @app.post("/simulacao/reiniciar", response_model=SimulacaoDTO, tags=["simulação"])
+    def reiniciar(svc: Servico):
+        """Zera o banco do sistema; o próximo avancar-dia começa no dia zero do dataset."""
+        zerar(svc.uow().fabrica)
+        return SimulacaoDTO.de(svc.consultar_simulacao())
+
+    @app.post("/simulacao/pular-ate", response_model=SimulacaoDTO, tags=["simulação"], responses=ERROS)
+    def pular_ate(entrada: EntradaPularAte, svc: Servico):
+        """Avanço rápido com aprovação automática (restaura a configuração anterior no fim)."""
+        obter_simulador(svc).pular_ate(entrada.data)
+        return SimulacaoDTO.de(svc.consultar_simulacao())
+
+    @app.get("/simulacao/frames", response_model=list[DiaFilaDTO], tags=["simulação"])
+    def frames(svc: Servico, de: date, ate: date | None = None):
+        """Fila de cada dia fotografado no intervalo, no formato que o player do front usa."""
+        hoje = svc.consultar_simulacao().hoje
+        saida = []
+        for d in dias_entre(de, min(ate or hoje, hoje)):
+            try:
+                saida.append(DiaFilaDTO(data=d, ordem=[ItemFilaDTO.de(l) for l in svc.consultar_fila(d)]))
+            except NaoEncontrado:          # dia pulado sem foto (pular-ate)
+                continue
+        return saida
 
 
 @app.get("/simulacao", response_model=SimulacaoDTO, tags=["simulação"])

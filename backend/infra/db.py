@@ -26,6 +26,13 @@ def SessionFactory(engine: Engine) -> sessionmaker:
     return sessionmaker(engine, expire_on_commit=False)
 
 
+def zerar(fabrica: sessionmaker) -> None:
+    """Apaga e recria todas as tabelas do banco do sistema (só a simulação usa)."""
+    engine = fabrica.kw["bind"]
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+
+
 def fabrica_para(url: str) -> sessionmaker:
     """Engine + tabelas + fábrica, num passo (usado pelos testes e pela API)."""
     engine = criar_engine(url)
