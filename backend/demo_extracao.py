@@ -69,7 +69,7 @@ def demo_em_memoria():
     print(f"Classe proposta: {av.classe} | Motivo: {av.motivo_classe}")
     print(f"Score gravidade: {av.gravidade} | Score deterioração: {av.deterioracao}")
 
-    sugestoes = decidir(av, classe_aprovada=None)
+    sugestoes = decidir(av, aprovado=None, novos=achados)
     print("\n--- SUGESTÕES GERADAS PELO DECISOR ---")
     for s in sugestoes:
         print(f"• [{s.tipo.value}] Classe Proposta: {s.classe_para} (Urgente: {s.urgente})")
@@ -133,7 +133,7 @@ def demo_banco_real():
     print(f"  Classe: {av.classe} ({av.motivo_classe})")
     print(f"  Gravidade: {av.gravidade} | Deterioração: {av.deterioracao}")
 
-    sugestoes = decidir(av, classe_aprovada=None)
+    sugestoes = decidir(av, aprovado=None, novos=achados)
     for s in sugestoes:
         print(f"  • [{s.tipo.value}] Classe Proposta: {s.classe_para} (Urgente: {s.urgente})")
         print(f"    Justificativa: {s.justificativa}")

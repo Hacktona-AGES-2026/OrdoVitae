@@ -46,25 +46,22 @@ def avaliar(solicitacao_id: str, achados: list[Achado], data_ref: date, data_ent
     alertas: list[Achado] = []
     gravidade = 0.0
     deterioracao = 0.0
-    codigos_gravidade: set[C] = set()
+    for a in _gravidade_sem_repeticao(validos):
+        pts = config.PONTOS.get(a.codigo, 0)
+        gravidade += pts
+        contribuicoes.append(Contribuicao(a, pts))
 
     for a in validos:
         if a.dimensao == Dimensao.ALERTA:
             alertas.append(a)
-        elif a.dimensao == Dimensao.GRAVIDADE:
-            if a.codigo in codigos_gravidade:  # gravidade conta uma vez por código
-                continue
-            codigos_gravidade.add(a.codigo)
-            pts = config.PONTOS.get(a.codigo, 0)
-            gravidade += pts
-            contribuicoes.append(Contribuicao(a, pts))
-        else:
+        elif a.dimensao == Dimensao.DETERIORACAO:
             pts = config.PONTOS.get(a.codigo, 0) * _decaimento(a.data_fato or data_entrada, data_ref)
             deterioracao += pts
             contribuicoes.append(Contribuicao(a, round(pts, 2)))
 
     deterioracao = max(deterioracao, 0.0)
     classe, motivo = _classificar(gravidade + deterioracao, validos, data_ref)
+    p_piora = config.P_PIORA[min(_pioras_recentes(validos, data_ref), 2)]
 
     return Avaliacao(
         solicitacao_id=solicitacao_id,
@@ -73,8 +70,39 @@ def avaliar(solicitacao_id: str, achados: list[Achado], data_ref: date, data_ent
         deterioracao=round(deterioracao, 2),
         classe=classe,
         motivo_classe=motivo,
+        p_piora=p_piora,
+        ordo_clinico=ordo_clinico(gravidade + deterioracao, p_piora),
         contribuicoes=sorted(contribuicoes, key=lambda c: -abs(c.pontos)),
         alertas=alertas,
+    )
+
+
+def ordo_clinico(pontos: float, p_piora: float) -> float:
+    """Estado clínico (0–100): pontos + chance de piora. É a parte que o regulador aprova."""
+    clinico = min(max(pontos, 0) / config.TETO_PONTOS, 1)
+    piora = p_piora / max(config.P_PIORA.values())
+    peso = config.W_PONTOS + config.W_PIORA
+    return round(100 * (config.W_PONTOS * clinico + config.W_PIORA * piora) / peso, 1)
+
+
+def _gravidade_sem_repeticao(achados: list[Achado]) -> list[Achado]:
+    """Um achado por código e, dentro de cada grupo exclusivo, só o de maior pontuação."""
+    por_codigo: dict[C, Achado] = {}
+    for a in achados:
+        if a.dimensao == Dimensao.GRAVIDADE:
+            por_codigo.setdefault(a.codigo, a)
+    for grupo in config.GRUPOS_EXCLUSIVOS:
+        presentes = [c for c in grupo if c in por_codigo]
+        for c in sorted(presentes, key=lambda c: (-config.PONTOS.get(c, 0), c.value))[1:]:
+            del por_codigo[c]
+    return list(por_codigo.values())
+
+
+def _pioras_recentes(achados: list[Achado], data_ref: date) -> int:
+    return sum(
+        1 for a in achados
+        if a.dimensao == Dimensao.DETERIORACAO and config.PONTOS.get(a.codigo, 0) > 0
+        and a.data_fato and 0 <= (data_ref - a.data_fato).days < config.JANELA_PIORA_DIAS
     )
 
 

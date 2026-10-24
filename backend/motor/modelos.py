@@ -31,9 +31,9 @@ class CodigoAchado(str, Enum):
     PROGRESSAO_IMAGEM = "PROGRESSAO_IMAGEM"
     REAVALIACAO_PIORA = "REAVALIACAO_PIORA"
     PIORA_RELATADA = "PIORA_RELATADA"        # telefone, observação, texto
-    HBA1C_DESCONTROLADA = "HBA1C_DESCONTROLADA"  # HbA1c > 8,5
     MELHORA = "MELHORA"                      # reavaliação com melhora, relata melhora
     # alertas (0 pontos)
+    HBA1C_DESCONTROLADA = "HBA1C_DESCONTROLADA"  # HbA1c > 8,5 — descuido ou negligência? avaliar
     PERDA_CONTATO = "PERDA_CONTATO"          # não atendeu, faltas
     SAIU_DA_FILA = "SAIU_DA_FILA"            # desistiu, operou em outro serviço
     OTIMIZAR_CLINICAMENTE = "OTIMIZAR_CLINICAMENTE"  # ex.: HbA1c alta antes de cirurgia
@@ -82,6 +82,8 @@ class Avaliacao:
     deterioracao: float
     classe: str                         # A1, A2, B, C, D
     motivo_classe: str                  # "piso: oncológico", "limiar: total 7.0 >= 6"…
+    p_piora: float                      # P(piora em 90 dias), tabela empírica
+    ordo_clinico: float                 # 0–100, estado clínico (pontos + piora), sem classe/espera
     contribuicoes: list[Contribuicao] = field(default_factory=list)
     alertas: list[Achado] = field(default_factory=list)
 
@@ -108,3 +110,10 @@ class Sugestao:
     motivos: list[Achado]
     justificativa: str
     urgente: bool = False
+    ordo_clinico_de: float | None = None
+    ordo_clinico_para: float | None = None
+    # preenchidas por fila.prever_posicoes (score final, com classe/espera/risco, na data de referência)
+    ordo_de: float | None = None
+    ordo_para: float | None = None
+    posicao_de: int | None = None
+    posicao_para: int | None = None

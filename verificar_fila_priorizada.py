@@ -1,136 +1,99 @@
-# Dataset — Desafio 1: Priorização Inteligente da Fila Cirúrgica
+# -*- coding: utf-8 -*-
+"""
+verificar_fila_priorizada.py
+Verifica o entregável comum do desafio: fila_priorizada.csv (solicitacao_id, posicao, justificativa).
 
-9ª Hackatona de Engenharia de Software · 2026 · Fin-x · PUCRS · Hospital São Lucas
+  1. Formato: colunas obrigatórias, posições inteiras únicas, ids existentes na fila.
+  2. Cobertura: quantas solicitações da fila ficaram de fora (pode ser legítimo: duplicatas, desistências).
+  3. REGRA DE OURO: nenhum paciente com CID C* abaixo de um paciente "sem urgência clínica".
+     Definição conservadora de "sem urgência clínica" usada aqui:
+       CID não oncológico, dor EVA <= 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade,
+       sem pronto-socorro/internação/biópsia positiva/progressão em imagem/reavaliação com piora nos eventos,
+       e sem sinais de alarme no texto da justificativa.
+  4. Indicadores informativos: posição mediana dos oncológicos, dos pacientes com piora recente etc.
 
-**Dados 100% sintéticos. Nenhum paciente real. Uso livre.**
-**Data de referência: 23/10/2026** (todos os `dias_em_fila` e os eventos foram calculados em relação a esta data).
+Uso: python verificar_fila_priorizada.py fila_priorizada.csv [--dataset pasta_do_dataset]
+"""
+import argparse
+import os
+import sys
 
-## Arquivos
-
-| Arquivo | Linhas | O que é |
-|---|---|---|
-| `fila_cirurgica.csv` | 941 | A fila: uma linha por solicitação cirúrgica, já com os dados do paciente, diagnóstico, dor, limitação, tempo de espera, prioridade manual da regulação e textos livres. |
-| `eventos_clinicos.csv` | ~1.500 | O que aconteceu durante a espera: biópsias, HbA1c, pronto-socorro, internações, exames de imagem, reavaliações, contatos telefônicos e faltas. |
-| `procedimentos.csv` | 23 | Catálogo de procedimentos: especialidade, porte, risco cirúrgico (1 a 5), duração média e necessidade de UTI. |
-| `referencias/swalis.csv` | 5 | Um framework possível de urgência (classes A1 a D com prazo máximo). Opcional. |
-| `dicionario_dados.md` | — | Descrição de cada coluna, domínios e observações. |
-| `verificar_fila_priorizada.py` | — | Verificador da regra de ouro para o `fila_priorizada.csv` que a sua equipe vai entregar. |
-
-Formato: CSV, separador vírgula, UTF-8 (sem BOM), datas em `AAAA-MM-DD`, decimais com ponto.
-
-## Avisos importantes
-
-- **Como num sistema real, os dados têm defeitos.** Flags que não batem com o diagnóstico ou com os eventos, solicitações duplicadas, informação importante que só aparece no texto livre, prioridade manual que erra com frequência, campos vazios, CID às vezes sem ponto (`K409` e `K40.9` são o mesmo código), município com grafia inconsistente, alguns eventos apontando para solicitações que já saíram da fila. Tratar isso faz parte do desafio.
-- **Não existe classe de urgência pronta.** O SWALIS é só uma referência possível.
-- **Regra de ouro:** nenhum paciente com neoplasia maligna (CID iniciado por `C`) pode ficar abaixo de um paciente sem urgência clínica. Use o CID, não a flag.
-- `eventos_clinicos.csv` se liga à fila por `solicitacao_id` (e também traz `paciente_id`). Quando um paciente tem mais de uma solicitação, os eventos podem estar ligados a apenas uma delas.
-- Os campos de preparo pré-operatório (`hba1c_ultima`, `avaliacao_pre_anestesica`, `exames_pre_op_validos`) são opcionais e não são avaliados.
-
-## Exemplos rápidos
-
-### Python (pandas)
-
-```python
 import pandas as pd
 
-REF = pd.Timestamp("2026-10-23")
-fila = pd.read_csv("fila_cirurgica.csv", parse_dates=["data_entrada_fila"])
-eventos = pd.read_csv("eventos_clinicos.csv", parse_dates=["data_evento"])
-procs = pd.read_csv("procedimentos.csv")
+REF = pd.Timestamp('2026-10-23')
+KW_ALARME = (r'encarcer|estrangul|colangite|icter|pancreatite|enterorragia|melena|hematemese|suboclus|perda ponderal|disfagia|sepse|'
+             r'hidronefrose|perda de funcao|transfund|hemoptise|rouquidao|linfonodo.*(?:fixo|palpavel)|sangramento espontaneo|acamad|'
+             r'ulcera de pressao|quedas de repeticao|glaucoma facomorfico|retencao de co2|dano neurologico|psa em elevacao|dessaturacao|'
+             r'angina em repouso|sincope|crescimento rapido|retencao urinaria aguda|massa anexial|ca-125')
+CID_URGENTE = {'I200', 'K403', 'K400', 'K420', 'K430', 'K800', 'N132', 'I832'}
 
-# normalizações básicas
-fila["cid"] = fila["cid_principal"].str.upper().str.replace(".", "", regex=False)
-fila["oncologico"] = fila["cid"].str.startswith("C")
-fila["prioridade"] = fila["prioridade_regulacao"].str.lower().str.replace("é", "e")
 
-print(len(fila), "solicitações;", fila["oncologico"].sum(), "oncológicas")
-print(pd.crosstab(fila["oncologico"], fila["prioridade"]))
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('arquivo')
+    ap.add_argument('--dataset', default=os.path.dirname(os.path.abspath(__file__)))
+    a = ap.parse_args()
 
-# quem piorou nos últimos 180 dias?
-recentes = eventos[eventos["data_evento"] >= REF - pd.Timedelta(days=180)]
-piora = recentes[recentes["tipo_evento"].isin(["pronto_socorro", "internacao"])]
-print(fila[fila["solicitacao_id"].isin(piora["solicitacao_id"])].shape[0], "pacientes com PS/internação recente")
+    fila = pd.read_csv(os.path.join(a.dataset, 'fila_cirurgica.csv'))
+    ev = pd.read_csv(os.path.join(a.dataset, 'eventos_clinicos.csv'), parse_dates=['data_evento'])
+    out = pd.read_csv(a.arquivo)
+    erros, avisos = [], []
 
-# biópsia positiva em quem ainda não tem CID C*
-bx = eventos[(eventos["tipo_evento"] == "biopsia") & (eventos["resultado"] == "positivo")]
-suspeitos = fila[fila["solicitacao_id"].isin(bx["solicitacao_id"]) & ~fila["oncologico"]]
-print(suspeitos[["solicitacao_id", "cid_principal", "justificativa_clinica"]].head())
+    # 1. formato
+    for c in ('solicitacao_id', 'posicao', 'justificativa'):
+        if c not in out.columns: erros.append(f'coluna obrigatória ausente: {c}')
+    if erros:
+        print('\n'.join('ERRO: ' + e for e in erros)); sys.exit(1)
+    if not out.solicitacao_id.is_unique: erros.append('solicitacao_id repetido no arquivo')
+    if not pd.api.types.is_integer_dtype(out.posicao): erros.append('posicao deve ser inteira')
+    elif not out.posicao.is_unique: erros.append('posicao repetida')
+    desconhecidos = set(out.solicitacao_id) - set(fila.solicitacao_id)
+    if desconhecidos: erros.append(f'{len(desconhecidos)} solicitacao_id não existem na fila (ex.: {sorted(desconhecidos)[:3]})')
+    vazias = out.justificativa.isna() | (out.justificativa.astype(str).str.strip() == '')
+    if vazias.any(): avisos.append(f'{int(vazias.sum())} linhas sem justificativa')
 
-# série de HbA1c por paciente
-hba = eventos[eventos["tipo_evento"] == "hba1c"].sort_values("data_evento")
-serie = hba.groupby("solicitacao_id")["valor_numerico"].agg(["first", "last", "size"])
-print(serie[(serie["size"] >= 2) & (serie["last"] - serie["first"] >= 1.0)].head())
-```
+    # 2. cobertura
+    fora = set(fila.solicitacao_id) - set(out.solicitacao_id)
+    if fora: avisos.append(f'{len(fora)} solicitações da fila não aparecem no arquivo (ok se forem duplicatas/desistências explicadas no DECISOES.md)')
 
-### Node.js
+    # 3. regra de ouro
+    f = fila.set_index('solicitacao_id')
+    f['cid'] = f.cid_principal.str.upper().str.replace('.', '', regex=False)
+    f['onco'] = f.cid.str.startswith('C')
+    piora_ids = set(ev[ev.tipo_evento.isin(['pronto_socorro', 'internacao'])
+                       | ((ev.tipo_evento == 'biopsia') & (ev.resultado == 'positivo'))
+                       | ((ev.tipo_evento == 'exame_imagem') & (ev.resultado == 'progressao'))
+                       | ((ev.tipo_evento == 'consulta_reavaliacao') & (ev.resultado == 'piora'))].solicitacao_id)
+    txt = f.justificativa_clinica.fillna('').str.lower().str.contains(KW_ALARME, regex=True)
+    f['sem_urgencia'] = ((~f.onco) & (f.intensidade_dor_eva.fillna(0) <= 3) & f.limitacao_funcional.fillna('nenhuma').isin(['nenhuma', 'leve'])
+                         & ~f.cid.isin(CID_URGENTE) & ~f.index.isin(piora_ids) & ~txt)
+    o = out.sort_values('posicao').set_index('solicitacao_id')
+    o = o.join(f[['onco', 'sem_urgencia', 'cid_principal']], how='left')
+    if o.sem_urgencia.fillna(False).any():
+        primeiro_calmo = o[o.sem_urgencia.fillna(False)].posicao.min()
+        viol = o[o.onco.fillna(False) & (o.posicao > primeiro_calmo)]
+        if len(viol):
+            erros.append(f'REGRA DE OURO VIOLADA: {len(viol)} paciente(s) oncológico(s) abaixo do primeiro paciente sem urgência clínica '
+                         f'(posição {primeiro_calmo}). Exemplos: {", ".join(f"{i} ({r.cid_principal}, pos {r.posicao})" for i, r in viol.head(5).iterrows())}')
+    onco_fora = [s for s in f[f.onco].index if s in fora]
+    if onco_fora: avisos.append(f'{len(onco_fora)} oncológicos ficaram FORA do arquivo — justifique no DECISOES.md (ex.: {onco_fora[:3]})')
 
-```bash
-npm install csv-parse
-```
+    # 4. indicadores
+    n = len(o)
+    print(f'Arquivo: {a.arquivo}  |  {n} posições  |  fila: {len(fila)} solicitações')
+    print(f'- posição mediana dos oncológicos: {o[o.onco.fillna(False)].posicao.median():.0f} de {n}')
+    print(f'- oncológicos no primeiro terço: {(o[o.onco.fillna(False)].posicao <= n / 3).mean():.0%}')
+    rec = set(ev[(ev.data_evento >= REF - pd.Timedelta(days=180)) & ev.tipo_evento.isin(['pronto_socorro', 'internacao'])].solicitacao_id)
+    pr = o[o.index.isin(rec)]
+    if len(pr): print(f'- pacientes com PS/internação nos últimos 180 dias na primeira metade: {(pr.posicao <= n / 2).mean():.0%}')
+    calmos = o[o.sem_urgencia.fillna(False)]
+    if len(calmos): print(f'- pacientes sem urgência clínica no último terço: {(calmos.posicao > 2 * n / 3).mean():.0%}')
+    print()
+    for w in avisos: print('AVISO:', w)
+    for e in erros: print('ERRO: ', e)
+    print('\nRESULTADO:', 'OK — regra de ouro respeitada e formato válido' if not erros else f'{len(erros)} erro(s)')
+    sys.exit(1 if erros else 0)
 
-```js
-const fs = require("fs");
-const { parse } = require("csv-parse/sync");
 
-const ler = (f) => parse(fs.readFileSync(f, "utf8"), { columns: true, skip_empty_lines: true });
-const fila = ler("fila_cirurgica.csv");
-const eventos = ler("eventos_clinicos.csv");
-
-const cid = (r) => r.cid_principal.toUpperCase().replace(".", "");
-const onco = fila.filter((r) => cid(r).startsWith("C"));
-console.log(fila.length, "solicitações;", onco.length, "oncológicas");
-
-// eventos por solicitação
-const porSolicitacao = new Map();
-for (const e of eventos) {
-  if (!porSolicitacao.has(e.solicitacao_id)) porSolicitacao.set(e.solicitacao_id, []);
-  porSolicitacao.get(e.solicitacao_id).push(e);
-}
-const REF = new Date("2026-10-23");
-const piorando = fila.filter((r) =>
-  (porSolicitacao.get(r.solicitacao_id) || []).some(
-    (e) => ["pronto_socorro", "internacao"].includes(e.tipo_evento) &&
-           (REF - new Date(e.data_evento)) / 86400000 <= 180));
-console.log(piorando.length, "pacientes com PS/internação nos últimos 180 dias");
-```
-
-### SQL (DuckDB — `pip install duckdb` ou o binário)
-
-```sql
-CREATE TABLE fila      AS SELECT * FROM read_csv_auto('fila_cirurgica.csv');
-CREATE TABLE eventos   AS SELECT * FROM read_csv_auto('eventos_clinicos.csv');
-CREATE TABLE procs     AS SELECT * FROM read_csv_auto('procedimentos.csv');
-
--- oncológicos por prioridade manual
-SELECT lower(prioridade_regulacao) AS prioridade, count(*) AS n
-FROM fila
-WHERE upper(replace(cid_principal, '.', '')) LIKE 'C%'
-GROUP BY 1 ORDER BY 1;
-
--- quem espera mais de um ano, por especialidade
-SELECT especialidade, count(*) FILTER (WHERE dias_em_fila > 365) AS mais_de_1_ano, count(*) AS total
-FROM fila GROUP BY 1 ORDER BY 2 DESC;
-
--- eventos de piora nos últimos 180 dias, por solicitação
-SELECT f.solicitacao_id, f.cid_principal, f.prioridade_regulacao,
-       count(*) FILTER (WHERE e.tipo_evento IN ('pronto_socorro','internacao')) AS ps_ou_internacao,
-       max(e.data_evento) AS ultimo_evento
-FROM fila f JOIN eventos e USING (solicitacao_id)
-WHERE e.data_evento >= DATE '2026-10-23' - INTERVAL 180 DAY
-GROUP BY 1,2,3 HAVING ps_ou_internacao > 0
-ORDER BY ps_ou_internacao DESC;
-
--- duplicidade: mesmo paciente, mesmo procedimento
-SELECT paciente_id, procedimento_id, count(*) AS n, string_agg(solicitacao_id, ', ') AS solicitacoes
-FROM fila GROUP BY 1,2 HAVING count(*) > 1;
-```
-
-## Entregável comum: `fila_priorizada.csv`
-
-Colunas obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Uma linha por solicitação que a sua solução considera ativa (vale explicar no `DECISOES.md` o que ficou de fora e por quê). Antes de entregar, rode:
-
-```bash
-python verificar_fila_priorizada.py caminho/para/fila_priorizada.csv
-```
-
-O verificador confere o formato, a cobertura da fila e a regra de ouro com uma definição conservadora de "sem urgência clínica". É uma ferramenta de autoconferência da equipe: a avaliação da banca é feita pela demonstração e pelo pitch.
+if __name__ == '__main__':
+    main()
