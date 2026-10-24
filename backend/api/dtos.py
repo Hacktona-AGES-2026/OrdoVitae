@@ -3,7 +3,7 @@
 JSON em camelCase para casar com o front (`priorizacao.ts`: posicaoAnterior, diasEmFila, alemDoPrazo…).
 """
 from datetime import date
-from typing import Any
+from typing import Generic, TypeVar, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -42,6 +42,19 @@ class EntradaSimulacao(DTO):
 
 class EntradaRejeitar(DTO):
     comentario: str = ""
+
+
+class EntradaDecisao(DTO):
+    """PATCH /sugestoes/{id}: o regulador decide. Rejeitar exige comentário."""
+    status: Literal["aprovada", "rejeitada"]
+    comentario: str = ""
+
+
+class EntradaPatchSimulacao(DTO):
+    """PATCH /simulacao: muda o estado da simulação (campos ausentes ficam como estão)."""
+    auto_aprovar: bool | None = None
+    hoje: date | None = None                       # avança o relógio até esta data
+    modo: Literal["passo", "rapido"] = "passo"     # passo: dia a dia com foto; rapido: aprovação automática, sem fotos
 
 
 # --- saída -----------------------------------------------------------------------------
@@ -134,9 +147,28 @@ class ItemFilaDTO(DTO):
         return cls(**vars(l), prazo=prazo, alem_do_prazo=max(0, l.dias_em_fila - prazo))
 
 
+T = TypeVar("T")
+
+
+class PaginaDTO(DTO, Generic[T]):
+    """Envelope de coleção: itens da página + total da coleção (com os filtros), limite e offset."""
+    itens: list[T]
+    total: int
+    limite: int
+    offset: int
+
+    @classmethod
+    def de(cls, pagina, conv) -> "PaginaDTO":
+        return cls(itens=[conv(x) for x in pagina], total=pagina.total, limite=pagina.limite, offset=pagina.offset)
+
+
 class DiaFilaDTO(DTO):
+    """Fila de um dia, paginada. `ordem` mantém o nome que o front já usa."""
     data: date | None
     ordem: list[ItemFilaDTO]
+    total: int
+    limite: int
+    offset: int
 
 
 class PosicaoHistoricoDTO(DTO):

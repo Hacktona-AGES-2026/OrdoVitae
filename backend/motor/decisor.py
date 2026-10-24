@@ -6,7 +6,7 @@ não gera sugestão sozinho. O humano aprova classe + parte clínica do OrdoScor
 """
 from dataclasses import dataclass
 
-from .avaliacao import mais_urgente
+from .avaliacao import deduplicar, mais_urgente
 from .modelos import Achado, Avaliacao, CodigoAchado as C, Dimensao, Sugestao, TipoSugestao
 
 ALERTAS_SEM_MUDANCA = {C.PERDA_CONTATO, C.OTIMIZAR_CLINICAMENTE, C.DADOS_INSUFICIENTES, C.HBA1C_DESCONTROLADA}
@@ -23,7 +23,7 @@ def decidir(av: Avaliacao, aprovado: EstadoAprovado | None, novos: list[Achado])
     sugestoes: list[Sugestao] = []
     novos_ids = {a.id for a in novos}
     novos_alertas = [a for a in av.alertas if a.id in novos_ids]
-    novos_clinicos = [a for a in novos if a.dimensao != Dimensao.ALERTA]
+    novos_clinicos = deduplicar([a for a in novos if a.dimensao != Dimensao.ALERTA])   # regra + LLM do mesmo fato: 1 só
     classe_de = aprovado.classe if aprovado else None
     ordo_de = aprovado.ordo_clinico if aprovado else None
 

@@ -3,19 +3,19 @@
 Rodar (de dentro de backend/):  uvicorn api.main:app --reload
 """
 import os
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from servico.casos_uso import ServicoFila
+from servico.erros import NaoEncontrado, TransicaoInvalida
 
 from .dependencias import obter_servico, obter_simulador
-from .dtos import (AlertaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
-                   EntradaSimulacao,
-                   ErroDTO, FichaDTO, ItemFilaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
+from .dtos import (AlertaDTO, DiaFilaDTO, EntradaDecisao, EntradaIntegracao, EntradaPatchSimulacao, ErroDTO, FichaDTO,
+                   ItemFilaDTO, PaginaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
 from .erros import registrar_handlers
 
 app = FastAPI(title="OrdoVitae", description="Priorização da fila cirúrgica: integração, simulação e regulador.")
@@ -26,107 +26,134 @@ registrar_handlers(app)
 Servico = Annotated[ServicoFila, Depends(obter_servico)]
 SIMULADOR_ATIVO = os.environ.get("SIMULADOR") == "1"     # config de ambiente; desligado em produção
 ERROS = {404: {"model": ErroDTO}, 409: {"model": ErroDTO}, 422: {"model": ErroDTO}}
+# Paginação padrão de toda coleção: nenhuma rota devolve a coleção inteira.
+Limite = Annotated[int, Query(ge=1, le=200, description="itens por página")]
+Offset = Annotated[int, Query(ge=0, description="itens a pular")]
+LIMITE_PADRAO = 50
+MAX_DIAS_HISTORICO = 31
 
 
-# --- integração (o simulador chama) ------------------------------------------------------
+# --- integração (sistemas externos chamam) ------------------------------------------------
 
-@app.post("/integracao/solicitacoes", response_model=RecebimentoDTO, tags=["integração"])
+@app.post("/integracao/solicitacoes", response_model=RecebimentoDTO, status_code=status.HTTP_201_CREATED,
+          tags=["integração"])
 def receber_solicitacao(entrada: EntradaIntegracao, svc: Servico):
     return RecebimentoDTO(sugestoes=[SugestaoDTO.de(r) for r in svc.receber_solicitacao(entrada.dados, entrada.resposta_llm)])
 
 
-@app.post("/integracao/eventos", response_model=RecebimentoDTO, tags=["integração"])
+@app.post("/integracao/eventos", response_model=RecebimentoDTO, status_code=status.HTTP_201_CREATED,
+          tags=["integração"])
 def receber_evento(entrada: EntradaIntegracao, svc: Servico):
     return RecebimentoDTO(sugestoes=[SugestaoDTO.de(r) for r in svc.receber_evento(entrada.dados, entrada.resposta_llm)])
 
 
-# --- simulação ---------------------------------------------------------------------------
-
-@app.post("/simulacao/avancar-dia", response_model=SimulacaoDTO, tags=["simulação"], responses=ERROS)
-def avancar_dia(entrada: EntradaAvancarDia, svc: Servico):
-    """Com SIMULADOR=1, injeta as chegadas de cada dia do dataset antes de fotografar a fila."""
-    if SIMULADOR_ATIVO:
-        obter_simulador(svc).avancar(entrada.dias)
-    else:
-        svc.avancar_dia(entrada.dias)
-    return SimulacaoDTO.de(svc.consultar_simulacao())
-
-
-if SIMULADOR_ATIVO:
-    from infra.db import zerar
-    from servico.erros import NaoEncontrado
-    from servico.simulador import dias_entre
-
-    @app.post("/simulacao/reiniciar", response_model=SimulacaoDTO, tags=["simulação"])
-    def reiniciar(svc: Servico):
-        """Zera o banco do sistema; o próximo avancar-dia começa no dia zero do dataset."""
-        zerar(svc.uow().fabrica)
-        return SimulacaoDTO.de(svc.consultar_simulacao())
-
-    @app.post("/simulacao/pular-ate", response_model=SimulacaoDTO, tags=["simulação"], responses=ERROS)
-    def pular_ate(entrada: EntradaPularAte, svc: Servico):
-        """Avanço rápido com aprovação automática (restaura a configuração anterior no fim)."""
-        obter_simulador(svc).pular_ate(entrada.data)
-        return SimulacaoDTO.de(svc.consultar_simulacao())
-
-    @app.get("/simulacao/frames", response_model=list[DiaFilaDTO], tags=["simulação"])
-    def frames(svc: Servico, de: date, ate: date | None = None):
-        """Fila de cada dia fotografado no intervalo, no formato que o player do front usa."""
-        hoje = svc.consultar_simulacao().hoje
-        saida = []
-        for d in dias_entre(de, min(ate or hoje, hoje)):
-            try:
-                saida.append(DiaFilaDTO(data=d, ordem=[ItemFilaDTO.de(l) for l in svc.consultar_fila(d)]))
-            except NaoEncontrado:          # dia pulado sem foto (pular-ate)
-                continue
-        return saida
-
+# --- simulação (recurso único) ----------------------------------------------------------
 
 @app.get("/simulacao", response_model=SimulacaoDTO, tags=["simulação"])
 def consultar_simulacao(svc: Servico):
     return SimulacaoDTO.de(svc.consultar_simulacao())
 
 
-@app.put("/simulacao", response_model=SimulacaoDTO, tags=["simulação"])
-def configurar_simulacao(entrada: EntradaSimulacao, svc: Servico):
-    return SimulacaoDTO.de(svc.configurar_simulacao(entrada.auto_aprovar))
+@app.patch("/simulacao", response_model=SimulacaoDTO, tags=["simulação"], responses=ERROS)
+def alterar_simulacao(entrada: EntradaPatchSimulacao, svc: Servico):
+    """`autoAprovar` liga/desliga a aprovação automática. `hoje` avança o relógio até a data:
+    modo `passo` (dia a dia, com foto) ou `rapido` (aprovação automática, só a foto final).
+    Com SIMULADOR=1, cada dia avançado recebe as chegadas do dataset."""
+    if entrada.auto_aprovar is not None:
+        svc.configurar_simulacao(entrada.auto_aprovar)
+    if entrada.hoje is not None:
+        atual = svc.consultar_simulacao().hoje
+        if SIMULADOR_ATIVO:
+            sim = obter_simulador(svc)
+            if entrada.modo == "rapido":
+                sim.pular_ate(entrada.hoje)
+            else:
+                dias = (entrada.hoje - atual).days if atual != date.min else (entrada.hoje - sim.fonte.primeira_data()).days + 1
+                if dias < 1:
+                    raise TransicaoInvalida(f"a simulação já está em {atual}")
+                sim.avancar(dias)
+        else:
+            if atual == date.min or entrada.hoje <= atual:
+                raise TransicaoInvalida(f"não é possível ir de {atual} para {entrada.hoje}")
+            svc.avancar_dia((entrada.hoje - atual).days)
+    return SimulacaoDTO.de(svc.consultar_simulacao())
 
 
-# --- regulador (o front chama) -------------------------------------------------------------
+if SIMULADOR_ATIVO:
+    from infra.db import zerar
 
-@app.get("/fila", response_model=DiaFilaDTO, tags=["regulador"], responses=ERROS)
-def consultar_fila(svc: Servico, data: date | None = None):
-    """Sem `data` (ou com a data de hoje): fila viva. Com data passada: a foto daquele dia."""
-    ordem = [ItemFilaDTO.de(l) for l in svc.consultar_fila(data)]
-    return DiaFilaDTO(data=data or SimulacaoDTO.de(svc.consultar_simulacao()).hoje, ordem=ordem)
+    @app.delete("/simulacao", status_code=status.HTTP_204_NO_CONTENT, tags=["simulação"])
+    def reiniciar_simulacao(svc: Servico):
+        """Zera o banco do sistema; o próximo avanço começa no dia zero do dataset."""
+        zerar(svc.uow().fabrica)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.get("/fila/exportar.csv", response_class=PlainTextResponse, tags=["regulador"])
+# --- fila ---------------------------------------------------------------------------------
+
+def _dia_fila(svc: ServicoFila, data: date | None, limite: int, offset: int) -> DiaFilaDTO:
+    p = svc.consultar_fila(data, limite, offset)
+    return DiaFilaDTO(data=data or SimulacaoDTO.de(svc.consultar_simulacao()).hoje, ordem=[ItemFilaDTO.de(l) for l in p],
+                      total=p.total, limite=limite, offset=offset)
+
+
+@app.get("/fila", response_model=DiaFilaDTO, tags=["fila"], responses=ERROS)
+def consultar_fila(svc: Servico, data: date | None = None, limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
+    """Fila viva (sem `data`) ou a foto de um dia passado. Paginada; posições são as da fila inteira."""
+    return _dia_fila(svc, data, limite, offset)
+
+
+@app.get("/fila/dias", response_model=list[DiaFilaDTO], tags=["fila"], responses=ERROS)
+def historico_fila(svc: Servico, de: date, ate: date | None = None, limite: Limite = LIMITE_PADRAO):
+    """Fotos da fila em vários dias (para o player): até 31 dias, `limite` primeiras posições de cada dia."""
+    hoje = svc.consultar_simulacao().hoje
+    ate = min(ate or hoje, hoje)
+    if (ate - de).days >= MAX_DIAS_HISTORICO:
+        raise TransicaoInvalida(f"intervalo máximo de {MAX_DIAS_HISTORICO} dias")
+    dias = []
+    for i in range((ate - de).days + 1):
+        try:
+            dias.append(_dia_fila(svc, de + timedelta(days=i), limite, 0))
+        except NaoEncontrado:          # dia sem foto (avanço rápido)
+            continue
+    return dias
+
+
+@app.get("/fila.csv", response_class=PlainTextResponse, tags=["fila"])
 def exportar_fila(svc: Servico):
+    """Representação CSV da fila inteira (entregável: solicitacao_id, posicao, justificativa)."""
     return PlainTextResponse(svc.exportar_fila_priorizada(), media_type="text/csv",
                              headers={"Content-Disposition": 'attachment; filename="fila_priorizada.csv"'})
 
+
+# --- solicitações, sugestões, alertas ------------------------------------------------------
 
 @app.get("/solicitacoes/{sid}", response_model=FichaDTO, tags=["regulador"], responses=ERROS)
 def consultar_paciente(sid: str, svc: Servico):
     return FichaDTO.de(svc.consultar_paciente(sid))
 
 
-@app.get("/sugestoes", response_model=list[SugestaoDTO], tags=["regulador"])
-def listar_sugestoes(svc: Servico, status: str | None = None):
-    return [SugestaoDTO.de(r) for r in svc.listar_sugestoes(status)]
+@app.get("/sugestoes", response_model=PaginaDTO[SugestaoDTO], tags=["regulador"])
+def listar_sugestoes(svc: Servico, status: str | None = Query(None, description="pendente|aprovada|rejeitada|substituida"),
+                     limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
+    """Paginada. As pendentes da página vêm com prévia de posição e justificativa comparativa."""
+    return PaginaDTO[SugestaoDTO].de(svc.listar_sugestoes(status, limite, offset), SugestaoDTO.de)
 
 
-@app.post("/sugestoes/{id}/aprovar", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)
-def aprovar(id: int, svc: Servico):
-    return SugestaoDTO.de(svc.aprovar_sugestao(id))
+@app.get("/sugestoes/{id}", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)
+def consultar_sugestao(id: int, svc: Servico):
+    return SugestaoDTO.de(svc.consultar_sugestao(id))
 
 
-@app.post("/sugestoes/{id}/rejeitar", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)
-def rejeitar(id: int, entrada: EntradaRejeitar, svc: Servico):
+@app.patch("/sugestoes/{id}", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)
+def decidir_sugestao(id: int, entrada: EntradaDecisao, svc: Servico):
+    """O regulador aprova ou rejeita (rejeitar exige comentário). Decidir duas vezes → 409."""
+    if entrada.status == "aprovada":
+        return SugestaoDTO.de(svc.aprovar_sugestao(id))
     return SugestaoDTO.de(svc.rejeitar_sugestao(id, entrada.comentario))
 
 
-@app.get("/alertas", response_model=list[AlertaDTO], tags=["regulador"])
-def listar_alertas(svc: Servico):
-    return [AlertaDTO.de(a) for a in svc.listar_alertas()]
+@app.get("/alertas", response_model=PaginaDTO[AlertaDTO], tags=["regulador"])
+def listar_alertas(svc: Servico, tipo: str | None = Query(None, description="critico|prazo_estourado|sem_asa|perda_contato|…"),
+                   limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
+    return PaginaDTO[AlertaDTO].de(svc.listar_alertas(tipo, limite, offset), AlertaDTO.de)

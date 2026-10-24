@@ -6,6 +6,19 @@ from enum import Enum
 from motor.modelos import Achado, Sugestao
 
 
+class Pagina(list):
+    """Uma página de uma coleção: é a lista dos itens da página + total, limite e offset."""
+
+    def __init__(self, itens, total: int, limite: int | None, offset: int):
+        super().__init__(itens)
+        self.total, self.limite, self.offset = total, limite, offset
+
+    @classmethod
+    def de(cls, todos: list, limite: int | None = None, offset: int = 0) -> "Pagina":
+        fim = None if limite is None else offset + limite
+        return cls(todos[offset:fim], len(todos), limite, offset)
+
+
 class StatusSugestao(str, Enum):
     PENDENTE = "pendente"
     APROVADA = "aprovada"

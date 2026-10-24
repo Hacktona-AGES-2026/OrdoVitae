@@ -13,7 +13,7 @@ from motor.modelos import Avaliacao, Dimensao, Sugestao, TipoSugestao as T
 
 from . import regras
 from .erros import ComentarioObrigatorio, NaoEncontrado, TransicaoInvalida
-from .modelos import Alerta, FichaPaciente, LinhaFila, Simulacao, StatusSugestao, SugestaoRegistrada
+from .modelos import Alerta, FichaPaciente, LinhaFila, Pagina, Simulacao, StatusSugestao, SugestaoRegistrada
 from .portas import Redator, Relogio, UnidadeDeTrabalho
 
 REGULADOR = "regulador"
@@ -165,7 +165,11 @@ class ServicoFila:
 
     # --- consultas -------------------------------------------------------------------
 
-    def consultar_fila(self, data: date | None = None) -> list[LinhaFila]:
+    def consultar_fila(self, data: date | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
+        """Fila oficial (viva ou foto de `data`), paginada. Posições são sempre as da fila inteira."""
+        return Pagina.de(self._linhas_fila(data), limite, offset)
+
+    def _linhas_fila(self, data: date | None) -> list[LinhaFila]:
         hoje = self.relogio.hoje()
         with self.uow() as uow:
             anterior = {x["solicitacao_id"]: x["posicao"] for x in uow.historico.foto((data or hoje) - timedelta(days=1))}
@@ -203,17 +207,34 @@ class ServicoFila:
                 posicao=posicao, achados=uow.achados.da_solicitacao(sid), historico=uow.historico.posicoes(sid),
                 sugestoes=[r for r in uow.sugestoes.listar() if r.solicitacao_id == sid])
 
-    def listar_sugestoes(self, status: str | None = None) -> list[SugestaoRegistrada]:
-        """Pendentes vêm com a prévia de posição (de/para), calculada na hora sobre a fila atual."""
+    def consultar_sugestao(self, id: int) -> SugestaoRegistrada:
         hoje = self.relogio.hoje()
         with self.uow() as uow:
-            registradas = uow.sugestoes.listar(status)
-            pendentes = [r.sugestao for r in registradas if r.status == StatusSugestao.PENDENTE]
+            r = uow.sugestoes.obter(id)
+            if r is None:
+                raise NaoEncontrado(f"sugestão {id}")
+            if r.status == StatusSugestao.PENDENTE:
+                prever_posicoes(self._fila(uow, hoje), [r.sugestao], hoje)
+            return r
+
+    def listar_sugestoes(self, status: str | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
+        """Paginada. As pendentes DA PÁGINA vêm com a prévia de posição (de/para), calculada na hora."""
+        hoje = self.relogio.hoje()
+        with self.uow() as uow:
+            pagina = Pagina.de(uow.sugestoes.listar(status), limite, offset)
+            pendentes = [r.sugestao for r in pagina if r.status == StatusSugestao.PENDENTE]
             if pendentes:
                 prever_posicoes(self._fila(uow, hoje), pendentes, hoje)
-            return registradas
+            return pagina
 
-    def listar_alertas(self) -> list[Alerta]:
+    def listar_alertas(self, tipo: str | None = None, limite: int | None = None, offset: int = 0) -> Pagina:
+        """Paginada; `tipo` filtra (ex.: critico, prazo_estourado, sem_asa, perda_contato…)."""
+        alertas = self._alertas()
+        if tipo:
+            alertas = [a for a in alertas if tipo in a.tipo.split(",")]
+        return Pagina.de(alertas, limite, offset)
+
+    def _alertas(self) -> list[Alerta]:
         hoje = self.relogio.hoje()
         with self.uow() as uow:
             alertas = [Alerta(",".join(sorted({a.codigo.value.lower() for a in r.sugestao.motivos})),
