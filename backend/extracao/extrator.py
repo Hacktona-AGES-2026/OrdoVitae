@@ -246,47 +246,10 @@ def extrair_solicitacao(
                 )
             )
 
-    # 5. Observações Administrativas e Clínicas da Fila Cirúrgica
+    # 5. Observações (se vierem junto da solicitação; o simulador manda como evento "observacao")
     obs = str(sol.get("observacoes") or "").strip()
     if obs:
-        obs_lower = obs.lower()
-        ev_obs = Evidencia(fonte="observacao", ref=f"{sol_id}:observacoes", trecho=obs)
-
-        # 5.1 Relato de internação
-        if "interna" in obs_lower:
-            achados.append(
-                Achado(codigo=C.INTERNACAO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
-
-        # 5.2 Relato de piora clínica
-        if "piora" in obs_lower:
-            achados.append(
-                Achado(codigo=C.PIORA_RELATADA, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
-
-        # 5.3 Emagrecimento visível ou perda de peso
-        if "emagrec" in obs_lower or "perda de peso" in obs_lower or "perda ponderal" in obs_lower:
-            achados.append(
-                Achado(codigo=C.SINAL_ALARME, dimensao=D.GRAVIDADE, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
-
-        # 5.4 Menção a idas ao Pronto-Socorro
-        if re.search(r"\b(?:foi\s+ao\s+ps|ao\s+ps\b|idas\s+a\s+emerg[eê]ncia)", obs_lower):
-            achados.append(
-                Achado(codigo=C.PRONTO_SOCORRO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
-
-        # 5.5 Indício de saída da fila
-        if re.search(r"\b(?:desistiu|retirada\s+da\s+fila|operou\s+pelo\s+conv[eê]nio|outro\s+servi[cç]o|n[aã]o\s+deseja\s+mais\s+operar)\b", obs_lower):
-            achados.append(
-                Achado(codigo=C.SAIU_DA_FILA, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
-
-        # 5.6 Perda de contato
-        if re.search(r"\b(?:telefone\s+fora\s+de\s+[aá]rea|n[uú]mero\s+n[aã]o\s+existe|mudou\s+de\s+endere[cç]o|sem\s+retorno|sem\s+sucesso)\b", obs_lower):
-            achados.append(
-                Achado(codigo=C.PERDA_CONTATO, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
-            )
+        achados.extend(_achados_de_observacao(obs, sol_id, data_fato, ref=f"{sol_id}:observacoes"))
 
     # 6. Achados de LLM pré-computados (se houver)
     if resposta_llm:
@@ -309,7 +272,10 @@ def extrair_evento(
     data_fato = _parse_date(ev.get("data_evento"))
     evidencia = Evidencia(fonte="evento", ref=evt_id, trecho=desc)
 
-    if tipo == "biopsia":
+    if tipo == "observacao":
+        # Observação sem data própria: o simulador manda junto do último evento do paciente.
+        achados.extend(_achados_de_observacao(desc, sol_id, data_fato, ref=evt_id or f"{sol_id}:observacoes"))
+    elif tipo == "biopsia":
         if resultado == "positivo":
             achados.append(
                 Achado(codigo=C.BIOPSIA_POSITIVA, dimensao=D.GRAVIDADE, solicitacao_id=sol_id, data_fato=data_fato, evidencia=evidencia)
@@ -412,3 +378,47 @@ def _anexar_achados_llm(
                 origem=Origem.LLM,
             )
         )
+
+
+def _achados_de_observacao(obs: str, sol_id: str, data_fato: date | None, ref: str) -> list[Achado]:
+    """Regras sobre o texto livre de observações (regulação, call center, enfermagem)."""
+    achados: list[Achado] = []
+    obs_lower = obs.lower()
+    ev_obs = Evidencia(fonte="observacao", ref=ref, trecho=obs)
+
+    # 5.1 Relato de internação
+    if "interna" in obs_lower:
+        achados.append(
+            Achado(codigo=C.INTERNACAO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+
+    # 5.2 Relato de piora clínica
+    if "piora" in obs_lower:
+        achados.append(
+            Achado(codigo=C.PIORA_RELATADA, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+
+    # 5.3 Emagrecimento visível ou perda de peso
+    if "emagrec" in obs_lower or "perda de peso" in obs_lower or "perda ponderal" in obs_lower:
+        achados.append(
+            Achado(codigo=C.SINAL_ALARME, dimensao=D.GRAVIDADE, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+
+    # 5.4 Menção a idas ao Pronto-Socorro
+    if re.search(r"\b(?:foi\s+ao\s+ps|ao\s+ps\b|idas\s+a\s+emerg[eê]ncia)", obs_lower):
+        achados.append(
+            Achado(codigo=C.PRONTO_SOCORRO, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+
+    # 5.5 Indício de saída da fila
+    if re.search(r"\b(?:desistiu|retirada\s+da\s+fila|operou\s+pelo\s+conv[eê]nio|outro\s+servi[cç]o|n[aã]o\s+deseja\s+mais\s+operar)\b", obs_lower):
+        achados.append(
+            Achado(codigo=C.SAIU_DA_FILA, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+
+    # 5.6 Perda de contato
+    if re.search(r"\b(?:telefone\s+fora\s+de\s+[aá]rea|n[uú]mero\s+n[aã]o\s+existe|mudou\s+de\s+endere[cç]o|sem\s+retorno|sem\s+sucesso)\b", obs_lower):
+        achados.append(
+            Achado(codigo=C.PERDA_CONTATO, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=ev_obs)
+        )
+    return achados
