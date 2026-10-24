@@ -51,6 +51,32 @@ class TestExtracaoRegras(unittest.TestCase):
         self.assertIn(C.DADOS_INSUFICIENTES, codigos)  # < 30 chars
         self.assertIn(C.SINAL_ALARME, codigos)
 
+    def test_negacao_sem_sinais_de_encarceramento(self):
+        # Os "sem sinais de encarceramento" não podem virar SINAL_ALARME
+        sol = {
+            "solicitacao_id": "SOL-TEST-NEG",
+            "data_entrada_fila": "2026-07-01",
+            "cid_principal": "K409",
+            "justificativa_clinica": "Hernia inguinal bilateral redutivel, abaulamento aos esforcos. Sem sinais de encarceramento.",
+        }
+        achados = extrair_solicitacao(sol)
+        codigos = [a.codigo for a in achados]
+        self.assertNotIn(C.SINAL_ALARME, codigos)
+
+    def test_angina_instavel_internacao_recente(self):
+        # "Angina instável, internação recente" precisa gerar achado
+        sol = {
+            "solicitacao_id": "SOL-TEST-ANGINA",
+            "data_entrada_fila": "2026-07-01",
+            "cid_principal": "I200",
+            "justificativa_clinica": "Angina instavel, internacao recente, lesao de tronco de coronaria esquerda. Cirurgia com prioridade.",
+        }
+        achados = extrair_solicitacao(sol)
+        codigos = [a.codigo for a in achados]
+        self.assertIn(C.CID_URGENTE, codigos)
+        self.assertIn(C.SINAL_ALARME, codigos)
+        self.assertIn(C.INTERNACAO, codigos)
+
     def test_evento_biopsia_positiva(self):
         ev = {
             "evento_id": "EVT-1",
@@ -164,6 +190,24 @@ class TestContagensDataset(unittest.TestCase):
         # No banco normalizado e deduplicado ficam 202.
         self.assertIn(ps_count, (202, 203))
         self.assertEqual(internacao_count, 41)
+
+    def test_validacao_39_observacoes_e_10_negacoes_dataset(self):
+        # 1. Os 10 "sem sinais de encarceramento" no dataset não podem gerar SINAL_ALARME
+        sols_encarcer = self.conn.execute("SELECT * FROM fila_cirurgica WHERE lower(justificativa_clinica) LIKE '%sem sinais de encarceramento%'").fetchall()
+        self.assertEqual(len(sols_encarcer), 10)
+        for s in sols_encarcer:
+            achados = extrair_solicitacao(dict(s))
+            self.assertNotIn(C.SINAL_ALARME, [a.codigo for a in achados])
+
+        # 2. As 39 observações com piora, internação, emagrecimento ou PS
+        sols_obs = self.conn.execute("SELECT * FROM fila_cirurgica WHERE length(observacoes) > 0").fetchall()
+        count_alvo_39 = 0
+        for s in sols_obs:
+            achados = extrair_solicitacao(dict(s))
+            cods = [a.codigo for a in achados if a.evidencia.fonte == "observacao"]
+            if any(c in (C.INTERNACAO, C.PIORA_RELATADA, C.SINAL_ALARME, C.PRONTO_SOCORRO) for c in cods):
+                count_alvo_39 += 1
+        self.assertEqual(count_alvo_39, 39)
 
 
 if __name__ == "__main__":
