@@ -95,10 +95,22 @@ def _chamar_api_openai_compativel(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    try:
+        import ssl
+        ctx = ssl.create_default_context()
+        try:
+            import certifi
+            ctx.load_verify_locations(certifi.where())
+        except Exception:
+            ctx = ssl._create_unverified_context()
+    except Exception:
+        ctx = None
+
+    with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
         data = json.loads(resp.read().decode("utf-8"))
         msg = data["choices"][0]["message"]
         conteudo = (msg.get("content") or "").strip()
+        usage = data.get("usage", {})
 
         # 1. Remove qualquer bloco de pensamento (<think>...</think>) do DeepSeek
         conteudo = re.sub(r"<think>[\s\S]*?</think>", "", conteudo, flags=re.MULTILINE).strip()
@@ -112,7 +124,7 @@ def _chamar_api_openai_compativel(
         if m:
             conteudo = m.group(0)
 
-        return json.loads(conteudo)
+        return json.loads(conteudo), usage
 
 
 def _chamar_api_gemini(
@@ -139,12 +151,28 @@ def _chamar_api_gemini(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    try:
+        import ssl
+        ctx = ssl.create_default_context()
+        try:
+            import certifi
+            ctx.load_verify_locations(certifi.where())
+        except Exception:
+            ctx = ssl._create_unverified_context()
+    except Exception:
+        ctx = None
+
+    with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
         data = json.loads(resp.read().decode("utf-8"))
         conteudo = data["candidates"][0]["content"]["parts"][0]["text"].strip()
         conteudo = re.sub(r"^```(?:json)?\s*", "", conteudo, flags=re.MULTILINE)
         conteudo = re.sub(r"```\s*$", "", conteudo, flags=re.MULTILINE).strip()
-        return json.loads(conteudo)
+        um = data.get("usageMetadata", {})
+        usage = {
+            "prompt_tokens": um.get("promptTokenCount", 0),
+            "completion_tokens": um.get("candidatesTokenCount", 0),
+        }
+        return json.loads(conteudo), usage
 
 
 def extrair_com_llm(
@@ -153,23 +181,23 @@ def extrair_com_llm(
     api_key: str,
     base_url: str | None = None,
     modelo: str | None = None,
-) -> list[dict]:
-    """Extrai achados via LLM e aplica validação anti-alucinação mandatória."""
+) -> tuple[list[dict], dict]:
+    """Extrai achados via LLM e aplica validação anti-alucinação mandatória. Retorna (achados, usage)."""
     if not texto or len(texto.strip()) < 5:
-        return []
+        return [], {}
 
     provedor_norm = (provedor or "openai").lower()
     if "gemini" in provedor_norm:
         modelo_escolhido = modelo or "gemini-1.5-flash"
-        bruto = _chamar_api_gemini(texto, api_key, modelo=modelo_escolhido)
+        bruto, usage = _chamar_api_gemini(texto, api_key, modelo=modelo_escolhido)
     else:
         # Default para openai_compatible (Groq, DeepSeek, OpenRouter, OpenAI, etc)
         base = base_url or os.environ.get("LLM_BASE_URL") or "https://api.openai.com/v1"
         modelo_escolhido = modelo or os.environ.get("LLM_MODEL") or "gpt-4o-mini"
-        bruto = _chamar_api_openai_compativel(texto, api_key, base_url=base, modelo=modelo_escolhido)
+        bruto, usage = _chamar_api_openai_compativel(texto, api_key, base_url=base, modelo=modelo_escolhido)
 
     if not isinstance(bruto, list):
-        return []
+        return [], usage
 
     # Validação obrigatória da spec (anti-alucinação)
     validos = []
@@ -204,7 +232,7 @@ def extrair_com_llm(
             "trecho": trecho,
         })
 
-    return validos
+    return validos, usage
 
 
 def extrair_via_regex_local(texto: str) -> list[str]:
@@ -291,7 +319,7 @@ def executar_teste_comparativo(amostras: list[dict], provedor: str, api_key: str
         print("\n[2. LLM]: Consultando API...", end="", flush=True)
         try:
             inicio = datetime.now()
-            achados_llm = extrair_com_llm(texto, provedor, api_key, base_url, modelo)
+            achados_llm, usage = extrair_com_llm(texto, provedor, api_key, base_url, modelo)
             tempo = (datetime.now() - inicio).total_seconds()
             metricas["tempos"].append(tempo)
             print(f" concluído em {tempo:.2f}s!")
@@ -308,16 +336,16 @@ def executar_teste_comparativo(amostras: list[dict], provedor: str, api_key: str
             if any(item["codigo"] in ("SAIU_DA_FILA", "PIORA_RELATADA", "INTERNACAO", "MELHORA") for item in achados_llm):
                 metricas["ganhos_semanticos_llm"] += 1
                 cods = [item["codigo"] for item in achados_llm]
-                print(f"   ✔ GANHO SEMÂNTICO: LLM capturou evento clínico/administrativo ({', '.join(cods)}) que o Regex não enxerga.")
+                print(f"   [OK] GANHO SEMANTICO: LLM capturou evento ({', '.join(cods)}) que o Regex nao enxerga.")
             elif re.search(r"\bsem\b|\bnega\b|\bsem sinais\b", texto.lower()) and not achados_llm and achados_regex:
                 metricas["negacoes_corrigidas"] += 1
-                print("   ✔ PREVENÇÃO DE FALSO POSITIVO: LLM interpretou corretamente a NEGAÇÃO clínica.")
+                print("   [OK] PREVENCAO DE FALSO POSITIVO: LLM interpretou corretamente a NEGACAO clinica.")
             elif bool(achados_regex) == bool(achados_llm):
                 metricas["concordancias"] += 1
-                print("   ✔ CONCORDÂNCIA: Regex e LLM convergiram no mesmo julgamento clínico.")
+                print("   [OK] CONCORDANCIA: Regex e LLM convergiram no mesmo julgamento clinico.")
             else:
                 metricas["concordancias"] += 1
-                print("   ✔ Extração consistente com o contexto.")
+                print("   [OK] Extracao consistente com o contexto.")
 
         except Exception as e:
             metricas["erros_api"] += 1
@@ -338,19 +366,181 @@ def executar_teste_comparativo(amostras: list[dict], provedor: str, api_key: str
     print("=" * 80)
 
 
+def executar_extracao_completa_lote(
+    db_path: Path, provedor: str, api_key: str, base_url: str | None, modelo: str | None, workers: int = 8
+):
+    """Executa a extração offline sobre todos os textos únicos do dataset em paralelo e salva na tabela extracoes_llm e em arquivo texto."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    import time
+
+    arquivo_log = RAIZ_BACKEND / "relatorio_extracao_llm.txt"
+    log_f = open(arquivo_log, "a", encoding="utf-8")
+
+    def log(msg=""):
+        print(msg)
+        log_f.write(str(msg) + "\n")
+        log_f.flush()
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+
+    # Garante que a tabela extracoes_llm exista conforme especificação
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS extracoes_llm (
+            ref TEXT PRIMARY KEY,
+            modelo TEXT,
+            resposta_json TEXT,
+            criado_em TEXT
+        )
+    """)
+    conn.commit()
+
+    # Coleta todas as referências do banco
+    sols_just = conn.execute("SELECT solicitacao_id, justificativa_clinica FROM fila_cirurgica WHERE length(justificativa_clinica) >= 15").fetchall()
+    sols_obs = conn.execute("SELECT solicitacao_id, observacoes FROM fila_cirurgica WHERE length(observacoes) >= 15").fetchall()
+    evts_desc = conn.execute("SELECT evento_id, descricao FROM eventos_clinicos WHERE length(descricao) >= 15").fetchall()
+
+    ja_processados = set(r[0] for r in conn.execute("SELECT ref FROM extracoes_llm").fetchall())
+
+    # Agrupa referências por texto único (evita chamadas redundantes!)
+    texto_para_refs = {}
+    for r in sols_just:
+        ref = f"{r['solicitacao_id']}:justificativa_clinica"
+        if ref not in ja_processados:
+            texto_para_refs.setdefault(r["justificativa_clinica"].strip(), []).append(ref)
+
+    for r in sols_obs:
+        ref = f"{r['solicitacao_id']}:observacoes"
+        if ref not in ja_processados:
+            texto_para_refs.setdefault(r["observacoes"].strip(), []).append(ref)
+
+    for r in evts_desc:
+        ref = r["evento_id"]
+        if ref not in ja_processados:
+            texto_para_refs.setdefault(r["descricao"].strip(), []).append(ref)
+
+    total_textos = len(texto_para_refs)
+    total_refs = sum(len(v) for v in texto_para_refs.values())
+
+    log("\n" + "=" * 80)
+    log(f"EXTRAÇÃO EM LOTE COM LLM ({modelo or 'deepseek-chat'})")
+    log(f"Data de Início: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    log(f"• Total de textos pendentes:          {total_textos} (que cobrem {total_refs} campos do banco)")
+    log(f"• Já processados anteriormente:       {len(ja_processados)}")
+    log(f"• Concorrência Paralela:              {workers} threads simultâneas")
+    log(f"• Arquivo de log em tempo real:       {arquivo_log.name}")
+    log("=" * 80)
+
+    if total_textos == 0:
+        log("Todos os textos já estão processados e salvos no banco!")
+        conn.close()
+        log_f.close()
+        return
+
+    total_prompt_tokens = 0
+    total_comp_tokens = 0
+    custo_acumulado_usd = 0.0
+
+    # Preços DeepSeek-V3 por 1M tokens ($0.14 input / $0.28 output)
+    PRECO_INPUT_1M = 0.14
+    PRECO_OUTPUT_1M = 0.28
+
+    inicio_geral = time.time()
+    itens_pendentes = list(texto_para_refs.items())
+    processados_count = 0
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_item = {
+            executor.submit(extrair_com_llm, texto, provedor, api_key, base_url, modelo): (texto, refs)
+            for texto, refs in itens_pendentes
+        }
+
+        for future in as_completed(future_to_item):
+            processados_count += 1
+            texto, refs = future_to_item[future]
+            try:
+                achados, usage = future.result()
+                p_tok = usage.get("prompt_tokens", 0)
+                c_tok = usage.get("completion_tokens", 0)
+
+                total_prompt_tokens += p_tok
+                total_comp_tokens += c_tok
+
+                custo_item = (p_tok * PRECO_INPUT_1M / 1_000_000) + (c_tok * PRECO_OUTPUT_1M / 1_000_000)
+                custo_acumulado_usd += custo_item
+
+                resp_json_str = json.dumps(achados, ensure_ascii=False)
+                now_iso = datetime.now().isoformat()
+
+                for ref in refs:
+                    conn.execute(
+                        "INSERT OR REPLACE INTO extracoes_llm (ref, modelo, resposta_json, criado_em) VALUES (?, ?, ?, ?)",
+                        (ref, modelo or "deepseek-chat", resp_json_str, now_iso),
+                    )
+                conn.commit()
+
+                resumo_achados = f"{len(achados)} achado(s): {', '.join(a['codigo'] for a in achados)}" if achados else "0 achados"
+                log(f"[{processados_count}/{total_textos}] Refs: {len(refs):2d} | Tokens: {p_tok + c_tok:3d} | Gasto: ${custo_acumulado_usd:.4f} | {resumo_achados}")
+
+            except Exception as e:
+                log(f"[{processados_count}/{total_textos}] ERRO ao processar texto: {e}")
+
+    tempo_total = time.time() - inicio_geral
+    log("\n" + "=" * 80)
+    log("EXTRAÇÃO EM LOTE CONCLUÍDA COM SUCESSO!")
+    log(f"• Textos Únicos Chamados:     {total_textos}")
+    log(f"• Total de Campos Atualizados: {total_refs}")
+    log(f"• Total Prompt Tokens:        {total_prompt_tokens:,}")
+    log(f"• Total Completion Tokens:    {total_comp_tokens:,}")
+    log(f"• Gasto Real Estimado:        ${custo_acumulado_usd:.4f} USD (~R$ {custo_acumulado_usd * 5.7:.2f})")
+    log(f"• Tempo Total:                {tempo_total / 60:.1f} minutos ({tempo_total:.1f}s)")
+    log(f"• Dados salvos na tabela:     'extracoes_llm' em {db_path.name}")
+    log(f"• Log completo salvo em:      {arquivo_log.resolve()}")
+    log("=" * 80)
+    conn.close()
+    log_f.close()
+
+
+def _carregar_env():
+    """Carrega automaticamente variáveis de arquivo .env se existir."""
+    candidatos_env = [
+        RAIZ_BACKEND / ".env",
+        RAIZ_BACKEND.parent / ".env",
+        RAIZ_BACKEND.parent.parent / ".env",
+        Path.cwd() / ".env",
+    ]
+    for env_path in candidatos_env:
+        if env_path.exists():
+            for line in env_path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip("'\"")
+                if k not in os.environ:
+                    os.environ[k] = v
+
+
 def main():
+    _carregar_env()
+
     parser = argparse.ArgumentParser(description="Extrator de Fatos Clínicos com LLM para o OrdoVitae")
-    parser.add_argument("--provedor", default="openai", choices=["openai", "gemini"], help="Provedor: 'openai' (serve Groq, OpenRouter, DeepSeek, etc) ou 'gemini'")
+    parser.add_argument("--provedor", default=os.environ.get("LLM_PROVIDER", "openai"), choices=["openai", "gemini"], help="Provedor: 'openai' (serve Groq, OpenRouter, DeepSeek, etc) ou 'gemini'")
     parser.add_argument("--api-key", default=None, help="Chave de API (ou via env LLM_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY)")
     parser.add_argument("--base-url", default=None, help="URL base para openai_compatible (ex: https://api.groq.com/openai/v1)")
     parser.add_argument("--modelo", default=None, help="Nome do modelo (ex: gpt-4o-mini, llama-3.1-8b-instant, gemini-1.5-flash)")
     parser.add_argument("--test", action="store_true", default=True, help="Executa teste comparativo com amostras reais do banco")
+    parser.add_argument("--todos", action="store_true", help="Processa em lote todos os textos do dataset e salva no SQLite")
     parser.add_argument("--amostras", type=int, default=6, help="Quantidade de amostras para testar")
+    parser.add_argument("--workers", type=int, default=8, help="Quantidade de requisições simultâneas em paralelo (padrão: 8)")
 
     args = parser.parse_args()
 
     # Busca a chave de API
-    api_key = args.api_key or os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    api_key = args.api_key or os.environ.get("LLM_API_KEY") or os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    base_url = args.base_url or os.environ.get("LLM_BASE_URL") or "https://api.deepseek.com"
+    modelo = args.modelo or os.environ.get("LLM_MODEL") or "deepseek-chat"
 
     if not api_key:
         print("\n" + "!" * 70)
@@ -377,8 +567,11 @@ def main():
         print("Banco ordovitae.sqlite3 não encontrado!")
         return
 
-    amostras = carregar_amostras_teste(db_path, n=args.amostras)
-    executar_teste_comparativo(amostras, args.provedor, api_key, args.base_url, args.modelo)
+    if args.todos:
+        executar_extracao_completa_lote(db_path, args.provedor, api_key, base_url, modelo, workers=args.workers)
+    else:
+        amostras = carregar_amostras_teste(db_path, n=args.amostras)
+        executar_teste_comparativo(amostras, args.provedor, api_key, base_url, modelo)
 
 
 if __name__ == "__main__":
