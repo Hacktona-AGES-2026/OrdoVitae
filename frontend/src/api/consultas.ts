@@ -138,7 +138,8 @@ function invalidarDepoisDeDecidir(qc: QueryClient, sid: string, hoje: string | n
   void qc.invalidateQueries({ queryKey: chaves.sugestoes })
   void qc.invalidateQueries({ queryKey: chaves.alertas })
   void qc.invalidateQueries({ queryKey: chaves.ficha(sid) })
-  if (hoje) void qc.invalidateQueries({ queryKey: chaves.fila(hoje) })
+  // prefixo ["fila", hoje]: chaves.fila(hoje) completaria offset/limite com 0 e não casaria com nenhuma página
+  if (hoje) void qc.invalidateQueries({ queryKey: ["fila", hoje] })
 }
 
 export function useAprovarSugestao(hoje: string | null) {
