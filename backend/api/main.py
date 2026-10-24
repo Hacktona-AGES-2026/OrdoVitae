@@ -14,8 +14,14 @@ from servico.casos_uso import ServicoFila
 from servico.erros import NaoEncontrado, TransicaoInvalida
 
 from .dependencias import obter_servico, obter_simulador
+<<<<<<< HEAD
 from .dtos import (AlertaDTO, DiaFilaDTO, EntradaDecisao, EntradaIntegracao, EntradaPatchSimulacao, ErroDTO, FichaDTO,
                    ItemFilaDTO, PaginaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
+=======
+from .dtos import (AlertaDTO, DecisaoCompartilhadaDTO, DiaFilaDTO, EntradaAvancarDia, EntradaIntegracao, EntradaPularAte, EntradaRejeitar,
+                   EntradaSimulacao,
+                   ErroDTO, FichaDTO, ItemFilaDTO, RecebimentoDTO, SimulacaoDTO, SugestaoDTO)
+>>>>>>> pr10
 from .erros import registrar_handlers
 
 app = FastAPI(title="OrdoVitae", description="Priorização da fila cirúrgica: integração, simulação e regulador.")
@@ -48,6 +54,12 @@ def receber_evento(entrada: EntradaIntegracao, svc: Servico):
 
 
 # --- simulação (recurso único) ----------------------------------------------------------
+
+@app.get("/simulacao/datas", response_model=list[date], tags=["simulação"])
+def datas_com_foto(svc: Servico):
+    """Dias com foto da fila, em ordem: são os dias navegáveis da linha do tempo do front."""
+    return svc.datas_com_foto()
+
 
 @app.get("/simulacao", response_model=SimulacaoDTO, tags=["simulação"])
 def consultar_simulacao(svc: Servico):
@@ -133,11 +145,25 @@ def consultar_paciente(sid: str, svc: Servico):
     return FichaDTO.de(svc.consultar_paciente(sid))
 
 
+<<<<<<< HEAD
 @app.get("/sugestoes", response_model=PaginaDTO[SugestaoDTO], tags=["regulador"])
 def listar_sugestoes(svc: Servico, status: str | None = Query(None, description="pendente|aprovada|rejeitada|substituida"),
                      limite: Limite = LIMITE_PADRAO, offset: Offset = 0):
     """Paginada. As pendentes da página vêm com prévia de posição e justificativa comparativa."""
     return PaginaDTO[SugestaoDTO].de(svc.listar_sugestoes(status, limite, offset), SugestaoDTO.de)
+=======
+@app.get("/solicitacoes/{sid}/decisao-compartilhada", response_model=DecisaoCompartilhadaDTO, tags=["regulador"],
+         responses=ERROS)
+def consultar_decisao_compartilhada(sid: str, svc: Servico):
+    """Motor secundário: adesão, barreiras e preferências do paciente, com os dados recebidos até hoje."""
+    av, usou_llm = svc.consultar_decisao_compartilhada(sid)
+    return DecisaoCompartilhadaDTO.de(av, usou_llm, svc.consultar_simulacao().hoje)
+
+
+@app.get("/sugestoes", response_model=list[SugestaoDTO], tags=["regulador"])
+def listar_sugestoes(svc: Servico, status: str | None = None):
+    return [SugestaoDTO.de(r) for r in svc.listar_sugestoes(status)]
+>>>>>>> pr10
 
 
 @app.get("/sugestoes/{id}", response_model=SugestaoDTO, tags=["regulador"], responses=ERROS)

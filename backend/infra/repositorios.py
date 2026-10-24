@@ -60,6 +60,11 @@ class RepoEventosSQL:
         self.s.flush()
         return self.s.get(EventoORM, evento_id) is not None
 
+    def da_solicitacao(self, sid: str) -> list[dict]:
+        linhas = self.s.scalars(select(EventoORM).where(EventoORM.solicitacao_id == sid)
+                                .order_by(EventoORM.data_evento, EventoORM.evento_id))
+        return [dict(l.dados) for l in linhas]
+
 
 class RepoAchadosSQL:
     def __init__(self, s: Session):
@@ -159,6 +164,9 @@ class RepoHistoricoSQL:
     def posicoes(self, sid: str) -> list[tuple[date, int, float]]:
         q = select(HistoricoFilaORM).where(HistoricoFilaORM.solicitacao_id == sid).order_by(HistoricoFilaORM.data)
         return [(l.data, l.posicao, l.score) for l in self.s.scalars(q)]
+
+    def datas(self) -> list[date]:
+        return list(self.s.scalars(select(HistoricoFilaORM.data).distinct().order_by(HistoricoFilaORM.data)))
 
 
 class RepoAuditoriaSQL:

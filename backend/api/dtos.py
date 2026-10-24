@@ -211,6 +211,40 @@ class AlertaDTO(DTO):
         return cls(**vars(a))
 
 
+class ItemDecisaoDTO(DTO):
+    codigo: str
+    categoria: str
+    nivel_atencao: str
+    titulo: str
+    descricao_medica: str
+    recomendacao_conduta: str
+    trecho_evidencia: str
+    fonte: str
+    valido_para_decisao: bool
+    conflito_clinico: str
+
+
+class DecisaoCompartilhadaDTO(DTO):
+    """Motor secundário (decisão compartilhada médico–paciente), calculado com os dados recebidos até hoje."""
+    solicitacao_id: str
+    data_referencia: date | None
+    elegivel_decisao_compartilhada: bool
+    status_adesao: str
+    nivel_atencao_maximo: str
+    tem_conflito_clinico: bool
+    resumo_medico: str
+    usou_llm: bool
+    itens: list[ItemDecisaoDTO]
+
+    @classmethod
+    def de(cls, av, usou_llm: bool, hoje: date | None) -> "DecisaoCompartilhadaDTO":
+        d = av.to_dict()
+        return cls(solicitacao_id=d["solicitacao_id"], data_referencia=_data(hoje),
+                   elegivel_decisao_compartilhada=d["elegivel_decisao_compartilhada"], status_adesao=d["status_adesao"],
+                   nivel_atencao_maximo=d["nivel_atencao_maximo"], tem_conflito_clinico=d["tem_conflito_clinico"],
+                   resumo_medico=d["resumo_medico"], usou_llm=usou_llm, itens=[ItemDecisaoDTO(**i) for i in d["itens"]])
+
+
 class SimulacaoDTO(DTO):
     hoje: date | None
     auto_aprovar: bool
