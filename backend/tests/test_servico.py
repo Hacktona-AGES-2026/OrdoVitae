@@ -305,3 +305,10 @@ class TestPrazoDaExplicacao(Base):
         self.assertEqual(chamadas, [T.SUBIR])
         self.assertEqual({r.sugestao.tipo: r.sugestao.explicacao for r in pendentes},
                          {T.SUBIR: "llm", T.CLASSIFICACAO_INICIAL: "template"})
+
+
+class TestCadastroSujo(Base):
+    def test_dor_ilegivel_nao_derruba_a_fila(self):
+        self.svc.receber_solicitacao(solicitacao("SOL-1", dor="N/A"))
+        self.svc.receber_solicitacao(solicitacao("SOL-2", pid="PAC-2", dor="7,0"))
+        self.assertEqual(len(self.svc.consultar_fila()), 2)
