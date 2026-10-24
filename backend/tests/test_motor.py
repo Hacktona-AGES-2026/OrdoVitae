@@ -1,7 +1,7 @@
 import unittest
 from datetime import date
 
-from motor import EstadoAprovado, ItemFila, avaliar, critico, decidir, ordenar, prazos_estourados, prever_posicoes
+from motor import EstadoAprovado, ItemFila, avaliar, avaliar_risco, critico, decidir, ordenar, prazos_estourados, prever_posicoes
 from motor.modelos import Achado, CodigoAchado as C, Dimensao as D, Evidencia, Origem, TipoSugestao
 
 REF = date(2026, 10, 23)
@@ -91,12 +91,35 @@ class TestDecisor(unittest.TestCase):
 
 
 class TestFila(unittest.TestCase):
-    def test_classe_antes_do_tempo(self):
+    def test_oncologico_recente_passa_quem_so_espera_ha_anos(self):
         fila = ordenar([
             ItemFila("ANTIGO", "D", 0, date(2022, 1, 1), False, True),
             ItemFila("ONCO", "A2", 40, date(2026, 10, 1), True, False),
         ], REF)
         self.assertEqual([i.solicitacao_id for i in fila], ["ONCO", "ANTIGO"])
+
+    def test_nao_agrupa_por_classe(self):
+        """Classe é parâmetro do score, não critério de agrupamento."""
+        fila = ordenar([
+            ItemFila("A2_ESTAVEL", "A2", 0, date(2026, 10, 1), False, False),
+            ItemFila("B_PIORANDO", "B", 100, date(2026, 10, 1), False, False),
+        ], REF)
+        self.assertEqual(fila[0].solicitacao_id, "B_PIORANDO")
+
+    def test_risco_alto_desce(self):
+        fila = ordenar([
+            ItemFila("ARRISCADO", "B", 60, date(2026, 1, 1), False, False, risco=1.0),
+            ItemFila("SEGURO", "B", 60, date(2026, 1, 1), False, False, risco=0.0),
+        ], REF)
+        self.assertEqual(fila[0].solicitacao_id, "SEGURO")
+        self.assertLess(fila[1].score(REF), fila[1].score_clinico(REF))
+
+    def test_espera_conta_mais_para_classe_urgente(self):
+        def ganho(classe):
+            antigo = ItemFila("X", classe, 50, date(2024, 10, 23), False, False)
+            novo = ItemFila("Y", classe, 50, date(2026, 10, 23), False, False)
+            return antigo.score_clinico(REF) - novo.score_clinico(REF)
+        self.assertGreater(ganho("A1"), ganho("D"))
 
     def test_ordo_score_ordena_dentro_da_classe(self):
         fila = ordenar([
@@ -143,6 +166,19 @@ class TestFila(unittest.TestCase):
         itens = [ItemFila("A", "A1", 50, date(2025, 10, 1), False, False),
                  ItemFila("B", "D", 0, date(2026, 10, 1), False, True)]
         self.assertEqual([i.solicitacao_id for i in prazos_estourados(itens, REF)], ["A"])
+
+
+
+class TestRisco(unittest.TestCase):
+    def test_matriz_asa_e_procedimento(self):
+        r = avaliar_risco(asa=3, n_comorbidades=2, risco_procedimento=5)
+        self.assertEqual((r.nivel_paciente, r.nivel_procedimento, r.valor, r.asa_estimado), ("medio", "alto", 0.75, False))
+        self.assertEqual(avaliar_risco(asa=2, n_comorbidades=0, risco_procedimento=1).valor, 0.0)
+
+    def test_sem_asa_estima_pelas_comorbidades_e_marca(self):
+        r = avaliar_risco(asa=None, n_comorbidades=5, risco_procedimento=2)
+        self.assertEqual((r.asa, r.asa_estimado, r.nivel_paciente), (3, True, "medio"))
+        self.assertIn("estimado", r.motivo)
 
 
 if __name__ == "__main__":

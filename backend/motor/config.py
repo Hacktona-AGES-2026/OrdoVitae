@@ -23,7 +23,6 @@ PONTOS: dict[C, float] = {
     C.PRONTO_SOCORRO: 2,
     C.REAVALIACAO_PIORA: 2,
     C.PIORA_RELATADA: 1,
-    C.HBA1C_DESCONTROLADA: 1,
     C.MELHORA: -1,
 }
 
@@ -51,26 +50,43 @@ GRUPOS_EXCLUSIVOS = [
     {C.LIMITACAO_GRAVE, C.LIMITACAO_MODERADA},
 ]
 
-# --- OrdoScore (0–100): ordena DENTRO da classe ---------------------------------
-# OrdoScore = (1 - PESO_PRAZO) * parte clínica  +  PESO_PRAZO * parte de prazo
-#   parte clínica: pontos + chance de piora — muda só com achado novo, precisa de aprovação
-#   parte de espera: dias na fila / TETO_ESPERA_DIAS — anda sozinha todo dia
-# (replay: sem isso, quem esperava 475 dias em A1 escorregou da posição 5 p/ 50
-#  porque recém-chegados passavam na frente. Usar "% do prazo da classe" não serve:
-#  73% da fila já estourou o prazo, então saturava e virava constante.)
-PESO_PRAZO = 0.3
-TETO_ESPERA_DIAS = 730  # 2 anos de espera = parte de espera em 100%
+# --- Score clínico (0–100): estado do paciente --------------------------------------
+# A fila NÃO agrupa por classe: a classe SWALIS entra como parâmetro do score clínico.
+#   estado  = pontos (gravidade + deterioração) + chance de piora  → muda só com achado novo (aprovado)
+#   classe  = urgência da classe SWALIS × MULT_CLASSE                → muda só com aprovação
+#   espera  = dias na fila, ponderada pela urgência da classe        → anda sozinha todo dia
+# (spikes/spike_parametro_classe.py: sem o multiplicador e sem a espera ponderada, 100 dos 177
+#  oncológicos ficavam abaixo de pacientes sem urgência que só esperavam muito; com eles, 4.)
+W_PONTOS = 0.35
+W_PIORA = 0.20
+W_CLASSE = 0.25
+W_ESPERA = 0.20
+MULT_CLASSE = 2.0
+URGENCIA_CLASSE = {"A1": 1.0, "A2": 0.8, "B": 0.55, "C": 0.3, "D": 0.0}
+ESPERA_PISO = 0.3        # espera vale de 30% (classe D) a 100% (classe A1) do seu peso
+TETO_PONTOS = 15         # pontos clínicos >= teto contam como 100%
+TETO_ESPERA_DIAS = 730   # 2 anos de espera = parte de espera em 100%
+
+# P(evento de piora nos próximos 90 dias) | nº de pioras nos últimos 90 dias (0, 1, 2+).
+# Gerado por spikes/calibrar_p_piora.py sobre o dataset (dado sintético; n=11 no "2+"; sem HbA1c).
+P_PIORA = {0: 0.036, 1: 0.300, 2: 0.455}
+JANELA_PIORA_DIAS = 90
+
+# --- Score de risco (0–1): risco do paciente × risco do procedimento ---------------
+# Matriz do médico da Fin-x. Quanto maior o risco, menos recomendada a cirurgia → desce na fila.
+# Paciente = ASA direto (já considera comorbidades). Sem ASA: estimado pelo nº de comorbidades
+# (moda no dataset) + alerta. Procedimento = risco_cirurgico de procedimentos.csv.
+NIVEL_RISCO = {"baixo": 0.0, "medio": 0.5, "alto": 1.0}
+ASA_NIVEL = {1: "baixo", 2: "baixo", 3: "medio", 4: "alto"}
+PROCEDIMENTO_NIVEL = {1: "baixo", 2: "baixo", 3: "medio", 4: "alto", 5: "alto"}
+ASA_ESTIMADO_POR_COMORBIDADES = {0: 1, 1: 2, 2: 2, 3: 3}  # 4+ → 3
+# Ponderação: score final = score clínico × (1 − PESO_RISCO × risco)
+# (spikes/spike_risco.py: multiplicar desloca menos que subtrair; 20% mantém o caso da demo no topo)
+PESO_RISCO = 0.2
 
 # --- Destaque "situação crítica" (só flag para o front; não mexe na ordem) ------
 # Paciente grave, no topo, com prazo estourado há muito tempo: o regulador precisa olhar
 # o caso (inclusive se a cirurgia ainda faz sentido). Critério a validar com a Fin-x.
 CRITICO_CLASSES = {"A1", "A2"}
 CRITICO_RAZAO_PRAZO = 3.0   # esperou 3x o prazo da classe ou mais
-CRITICO_ORDO_MIN = 85       # OrdoScore final
-# P(evento de piora nos próximos 90 dias) | nº de pioras nos últimos 90 dias (0, 1, 2+).
-# Gerado por spikes/calibrar_p_piora.py sobre o dataset (dado sintético; n=13 no "2+").
-P_PIORA = {0: 0.047, 1: 0.263, 2: 0.385}
-JANELA_PIORA_DIAS = 90
-TETO_PONTOS = 15        # pontos clínicos >= teto contam como 100%
-PESO_CLINICO = 0.6
-PESO_PIORA = 0.4
+CRITICO_SCORE_MIN = 85      # score final

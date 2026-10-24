@@ -50,7 +50,7 @@ CODIGO_DIMENSAO = {
     C.PROGRESSAO_IMAGEM: D.DETERIORACAO,
     C.REAVALIACAO_PIORA: D.DETERIORACAO,
     C.PIORA_RELATADA: D.DETERIORACAO,
-    C.HBA1C_DESCONTROLADA: D.DETERIORACAO,
+    C.HBA1C_DESCONTROLADA: D.ALERTA,  # decisão do time: glicemia é aviso, não deterioração
     C.MELHORA: D.DETERIORACAO,
     # Alerta
     C.PERDA_CONTATO: D.ALERTA,
@@ -363,11 +363,9 @@ def extrair_evento(
             try:
                 val_num = float(str(val_raw).replace(",", "."))
                 if val_num > 8.5:
+                    # Só alerta: pode ser descuido do paciente ou negligência do cuidado — avaliar, não reordenar.
                     achados.append(
-                        Achado(codigo=C.HBA1C_DESCONTROLADA, dimensao=D.DETERIORACAO, solicitacao_id=sol_id, data_fato=data_fato, evidencia=evidencia)
-                    )
-                    achados.append(
-                        Achado(codigo=C.OTIMIZAR_CLINICAMENTE, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=evidencia)
+                        Achado(codigo=C.HBA1C_DESCONTROLADA, dimensao=D.ALERTA, solicitacao_id=sol_id, data_fato=data_fato, evidencia=evidencia)
                     )
             except (ValueError, TypeError):
                 pass

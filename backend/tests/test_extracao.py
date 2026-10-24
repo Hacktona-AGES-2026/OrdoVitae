@@ -104,7 +104,7 @@ class TestExtracaoRegras(unittest.TestCase):
         achados = extrair_evento(ev)
         codigos = [a.codigo for a in achados]
         self.assertIn(C.HBA1C_DESCONTROLADA, codigos)
-        self.assertIn(C.OTIMIZAR_CLINICAMENTE, codigos)
+        self.assertTrue(all(a.dimensao == D.ALERTA for a in achados if a.codigo == C.HBA1C_DESCONTROLADA))
 
     def test_evento_saida_da_fila(self):
         ev = {

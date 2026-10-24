@@ -3,7 +3,7 @@ import csv
 import sys
 from datetime import date
 
-from carga import NAO_CALMO, REF, carregar, cid
+from carga import NAO_CALMO, REF, carregar, cid, risco
 
 sys.path.insert(0, "../backend")
 from motor import ItemFila, avaliar, ordenar  # noqa: E402
@@ -22,7 +22,7 @@ for s in fila:
         continue
     codigos = {a.codigo for a in achados[k]}
     itens.append(ItemFila(k, av.classe, av.ordo_clinico, date.fromisoformat(s["data_entrada_fila"]),
-                          cid(s).startswith("C"), not (codigos & NAO_CALMO)))
+                          cid(s).startswith("C"), not (codigos & NAO_CALMO), risco(s).valor))
     justificativas[k] = next(x.justificativa for x in sugs if x.tipo == TipoSugestao.CLASSIFICACAO_INICIAL)
 
 saida = sys.argv[1] if len(sys.argv) > 1 else "fila_priorizada.csv"

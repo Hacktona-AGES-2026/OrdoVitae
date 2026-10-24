@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from .avaliacao import mais_urgente
 from .modelos import Achado, Avaliacao, CodigoAchado as C, Dimensao, Sugestao, TipoSugestao
 
-ALERTAS_SEM_MUDANCA = {C.PERDA_CONTATO, C.OTIMIZAR_CLINICAMENTE, C.DADOS_INSUFICIENTES}
+ALERTAS_SEM_MUDANCA = {C.PERDA_CONTATO, C.OTIMIZAR_CLINICAMENTE, C.DADOS_INSUFICIENTES, C.HBA1C_DESCONTROLADA}
 
 
 @dataclass

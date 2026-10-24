@@ -78,9 +78,11 @@ def avaliar(solicitacao_id: str, achados: list[Achado], data_ref: date, data_ent
 
 
 def ordo_clinico(pontos: float, p_piora: float) -> float:
+    """Estado clínico (0–100): pontos + chance de piora. É a parte que o regulador aprova."""
     clinico = min(max(pontos, 0) / config.TETO_PONTOS, 1)
     piora = p_piora / max(config.P_PIORA.values())
-    return round(100 * (config.PESO_CLINICO * clinico + config.PESO_PIORA * piora), 1)
+    peso = config.W_PONTOS + config.W_PIORA
+    return round(100 * (config.W_PONTOS * clinico + config.W_PIORA * piora) / peso, 1)
 
 
 def _gravidade_sem_repeticao(achados: list[Achado]) -> list[Achado]:

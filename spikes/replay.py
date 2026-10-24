@@ -6,14 +6,14 @@ import statistics as st
 import sys
 from datetime import date
 
-from carga import NAO_CALMO, REF, carregar, cid, extrair_evento, extrair_solicitacao
+from carga import NAO_CALMO, REF, carregar, cid, extrair_evento, extrair_solicitacao, risco
 
 sys.path.insert(0, "../backend")
 from motor import EstadoAprovado, ItemFila, avaliar, decidir, ordenar, prazos_estourados  # noqa: E402
 from motor.fila import aplicar_regra_de_ouro  # noqa: E402
 from motor.modelos import CodigoAchado as C, TipoSugestao as T  # noqa: E402
 
-DEMO = sys.argv[1] if len(sys.argv) > 1 else "SOL-2025-00146"
+DEMO = next((a for a in sys.argv[1:] if not a.startswith("--")), "SOL-2025-00146")
 fila, eventos, _ = carregar()
 F = {s["solicitacao_id"]: s for s in fila}
 entrada = {k: date.fromisoformat(s["data_entrada_fila"]) for k, s in F.items()}
@@ -36,6 +36,7 @@ itens: dict[str, ItemFila] = {}
 sug_por_dia = Cn.Counter()
 tipos = Cn.Counter()
 trava_agiu = 0
+resgates_dia = []
 traj = []
 pior = (0, None, [])
 
@@ -59,28 +60,32 @@ for d in sorted(chegadas):
                 aprovado_alguma_vez.add(k)
                 codigos = {a.codigo for a in achados[k]}
                 itens[k] = ItemFila(k, s.classe_para, s.ordo_clinico_para, entrada[k], cid(F[k]).startswith("C"),
-                                    not (codigos & NAO_CALMO))
+                                    not (codigos & NAO_CALMO), risco(F[k]).valor)
             # (sem_urgencia é atualizado só quando há sugestão — suficiente p/ medir a trava)
     # regra de ouro: a ordenação SEM a trava já respeita?
-    sem_trava = sorted(itens.values(), key=lambda i: (["A1", "A2", "B", "C", "D"].index(i.classe), -i.ordo_score(d), i.data_entrada, i.solicitacao_id))
-    if aplicar_regra_de_ouro(list(sem_trava)) != sem_trava:
+    sem_trava = sorted(itens.values(), key=lambda i: (-i.score(d), i.data_entrada, i.solicitacao_id))
+    pc = next((n for n, i in enumerate(sem_trava) if i.sem_urgencia), None)
+    resgates = 0 if pc is None else sum(1 for i in sem_trava[pc:] if i.oncologico)
+    if resgates:
         trava_agiu += 1
+        resgates_dia.append(resgates)
     if DEMO in itens:
         pos = next(i.posicao for i in ordenar(list(itens.values()), d) if i.solicitacao_id == DEMO)
         it = itens[DEMO]
         if pos > pior[0]:
             fila_d = ordenar(list(itens.values()), d)
-            pior = (pos, d, [(i.ordo_clinico, (d - i.data_entrada).days, i.ordo_score(d)) for i in fila_d[:pos - 1]])
+            pior = (pos, d, [(i.ordo_clinico, (d - i.data_entrada).days, i.score(d)) for i in fila_d[:pos - 1]])
         if not traj or traj[-1][2:4] != (it.classe, it.ordo_clinico) or abs(traj[-1][1] - pos) >= 10:
-            traj.append((d.isoformat(), pos, it.classe, it.ordo_clinico, it.ordo_score(d), len(itens)))
+            traj.append((d.isoformat(), pos, it.classe, it.ordo_clinico, it.score(d), len(itens)))
 
 print(f"dias com chegada: {len(chegadas)} | fila final: {len(itens)}")
 print("sugestões por tipo:", {t.value: n for t, n in tipos.items()})
 ult = [n for d, n in sug_por_dia.items() if (REF - d).days <= 180]
 print(f"últimos 180 dias: {sum(ult)} sugestões; por dia com chegada: mediana {st.median(ult)}, máx {max(ult)}")
-print(f"dias em que a ordenação sem trava violaria a regra de ouro: {trava_agiu}")
+print(f"dias em que a ordenação sem trava violaria a regra de ouro: {trava_agiu} de {len(chegadas)}"
+      + (f" | oncológicos resgatados por dia: mediana {st.median(resgates_dia)}, máx {max(resgates_dia)}, no último dia {resgates_dia[-1] if resgates_dia else 0}" if resgates_dia else ""))
 
-print(f"\ntrajetória {DEMO} (data, posição, classe, Ordo clínico, OrdoScore final, tamanho da fila):")
+print(f"\ntrajetória {DEMO} (data, posição, classe, estado clínico, score final, tamanho da fila):")
 for t in traj:
     print("  ", t)
 
@@ -99,7 +104,17 @@ for k, ap in aprovado.items():
 print(f"classe diferente: {dif_classe} de {len(aprovado)}")
 print(f"OrdoScore aprovado - atual: mediana {st.median(dif_ordo):.1f}, >10 pts acima: {sum(x > 10 for x in dif_ordo)}, >30: {sum(x > 30 for x in dif_ordo)}")
 pos_aprov = {i.solicitacao_id: i.posicao for i in ordenar(list(itens.values()), REF)}
-fresh = [ItemFila(k, (av := avaliar(k, achados[k], REF, entrada[k])).classe, av.ordo_clinico, entrada[k], it.oncologico, it.sem_urgencia) for k, it in itens.items()]
+fresh = [ItemFila(k, (av := avaliar(k, achados[k], REF, entrada[k])).classe, av.ordo_clinico, entrada[k], it.oncologico, it.sem_urgencia, it.risco) for k, it in itens.items()]
 pos_fresh = {i.solicitacao_id: i.posicao for i in ordenar(fresh, REF)}
 desloc = [abs(pos_aprov[k] - pos_fresh[k]) for k in pos_aprov]
 print(f"posição aprovada × reavaliada: mediana {st.median(desloc)}, >50 posições: {sum(x > 50 for x in desloc)}, >200: {sum(x > 200 for x in desloc)}")
+
+if "--debug" in sys.argv:
+    f_ap = ordenar(list(itens.values()), REF)
+    c = next(i for i in f_ap if i.sem_urgencia)
+    av = avaliar(c.solicitacao_id, achados[c.solicitacao_id], REF, entrada[c.solicitacao_id])
+    print(f"\n[debug] 1º 'sem urgência' (aprovado): {c.solicitacao_id} pos {c.posicao} classe {c.classe} estado {c.ordo_clinico} score {c.score(REF)}"
+          f" | reavaliado hoje: classe {av.classe} estado {av.ordo_clinico}")
+    print("   achados:", sorted({a.codigo.value for a in achados[c.solicitacao_id]}))
+    onco = [i for i in f_ap if i.oncologico]
+    print("   oncológicos: classe aprovada", dict(Cn.Counter(i.classe for i in onco)), "| estado mediano", st.median(i.ordo_clinico for i in onco))
