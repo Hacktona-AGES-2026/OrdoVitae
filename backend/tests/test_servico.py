@@ -282,3 +282,26 @@ class TestPrazoDaExplicacao(Base):
         pendentes = self.svc.listar_sugestoes("pendente")
         self.assertLess(time.perf_counter() - t0, 1.5)
         self.assertEqual({r.sugestao.explicacao for r in pendentes}, {"template"})
+
+    def test_llm_vai_primeiro_para_subir_e_descer(self):
+        chamadas = []
+
+        class RedatorAnota(RedatorFake):
+            def explicar(self, s):
+                chamadas.append(s.tipo)
+                return "llm"
+
+            def explicar_sem_llm(self, s):
+                return "template"
+
+        self.svc.redator = RedatorAnota()
+        self.svc.MAX_EXPLICACOES = 1
+        self.svc.receber_solicitacao(solicitacao("SOL-1"))
+        self.aprovar_tudo()
+        self.svc.receber_solicitacao(solicitacao("SOL-2", pid="PAC-2"))
+        self.svc.receber_evento(evento("EVT-1", "SOL-1", "pronto_socorro", "atendido_liberado", "2026-01-10"))
+        chamadas.clear()
+        pendentes = self.svc.listar_sugestoes("pendente")
+        self.assertEqual(chamadas, [T.SUBIR])
+        self.assertEqual({r.sugestao.tipo: r.sugestao.explicacao for r in pendentes},
+                         {T.SUBIR: "llm", T.CLASSIFICACAO_INICIAL: "template"})

@@ -392,10 +392,12 @@ class ServicoFila:
 
         Com prazo total: rede lenta (ou 200 pendentes) não trava a tela. O que passar do limite ou não
         ficar pronto vai com o template e termina em segundo plano, enchendo o cache do redator."""
-        futuros = [_POOL_REDATOR.submit(self.redator.explicar, s) for s in sugestoes[:self.MAX_EXPLICACOES]]
-        wait(futuros, timeout=self.PRAZO_EXPLICACAO)
-        for i, s in enumerate(sugestoes):
-            f = futuros[i] if i < len(futuros) else None
+        # subir/descer primeiro: são as que o regulador decide; classificação inicial fica por último
+        prioridade = sorted(sugestoes, key=lambda s: s.tipo not in (T.SUBIR, T.DESCER))[:self.MAX_EXPLICACOES]
+        futuros = {id(s): _POOL_REDATOR.submit(self.redator.explicar, s) for s in prioridade}
+        wait(futuros.values(), timeout=self.PRAZO_EXPLICACAO)
+        for s in sugestoes:
+            f = futuros.get(id(s))
             pronto = f is not None and f.done() and f.exception() is None
             s.explicacao = f.result() if pronto else self.redator.explicar_sem_llm(s)
 
