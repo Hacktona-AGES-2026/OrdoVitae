@@ -171,7 +171,7 @@ function Conteudo({ sid, item: daPagina, data, hoje, primeiroDia, totalNaFila }:
                       </div>
                       <DecisaoSugestao sugestao={s} hoje={hoje} />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{s.justificativa}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{(s.status === "pendente" && s.explicacao) || s.justificativa}</p>
                     {s.comentario && <p className="text-xs italic">“{s.comentario}”</p>}
                   </li>
                 ))}

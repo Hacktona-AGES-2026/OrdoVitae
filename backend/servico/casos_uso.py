@@ -268,8 +268,11 @@ class ServicoFila:
             estado, risco = uow.estados.obter(sid)
             posicao = next((i.posicao for i in self._fila(uow, hoje) if i.solicitacao_id == sid), None)
             sugestoes = uow.sugestoes.da_solicitacao(sid)
-            provisorio = any(r.status == StatusSugestao.PENDENTE and r.sugestao.tipo == T.CLASSIFICACAO_INICIAL
-                             for r in sugestoes)                    # mesmo critério de _provisorios
+            pendentes = [r.sugestao for r in sugestoes if r.status == StatusSugestao.PENDENTE]
+            provisorio = any(s.tipo == T.CLASSIFICACAO_INICIAL for s in pendentes)   # mesmo critério de _provisorios
+            if pendentes:                       # a ficha mostra o mesmo texto redigido da lista, não o template cru
+                prever_posicoes(self._fila(uow, hoje), pendentes, hoje)
+                self._explicar(pendentes)
             return FichaPaciente(
                 sid, dados, ativa=posicao is not None, classe=estado.classe, ordo_clinico=estado.ordo_clinico,
                 provisorio=provisorio, risco=risco.valor, risco_motivo=risco.motivo,
