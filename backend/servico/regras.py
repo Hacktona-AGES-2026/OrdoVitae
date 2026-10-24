@@ -1,24 +1,41 @@
 """Regras pequenas e puras que o serviço usa para montar os dados do motor.
 
-`sem_urgencia` repete o critério `NAO_CALMO` de spikes/carga.py; o lugar final dele é o motor.
+`sem_urgencia` reproduz EXATAMENTE o critério do verificador oficial (verificar_fila_priorizada.py),
+porque é ele que julga a regra de ouro. Usa só dados brutos da solicitação e eventos tipados: achados
+de LLM ou de observação não contam (senão um paciente deixaria de ser "sem urgência" para nós e
+continuaria sendo para o verificador, e a trava não protegeria o oncológico).
 """
 import re
 from datetime import date
 
-from motor.modelos import Achado, CodigoAchado as C, Sugestao
+from motor.modelos import Achado, CodigoAchado as C, Origem, Sugestao
 
 from .modelos import MotivoSaida
 
-NAO_CALMO = {C.CID_MALIGNO, C.CID_URGENTE, C.SINAL_ALARME, C.DOR_INTENSA, C.DOR_MODERADA, C.LIMITACAO_GRAVE,
-             C.LIMITACAO_MODERADA, C.PRONTO_SOCORRO, C.INTERNACAO, C.BIOPSIA_POSITIVA, C.PROGRESSAO_IMAGEM,
-             C.REAVALIACAO_PIORA}
+# Copiados do verificador oficial.
+KW_ALARME = re.compile(
+    r"encarcer|estrangul|colangite|icter|pancreatite|enterorragia|melena|hematemese|suboclus|perda ponderal|disfagia|sepse|"
+    r"hidronefrose|perda de funcao|transfund|hemoptise|rouquidao|linfonodo.*(?:fixo|palpavel)|sangramento espontaneo|acamad|"
+    r"ulcera de pressao|quedas de repeticao|glaucoma facomorfico|retencao de co2|dano neurologico|psa em elevacao|dessaturacao|"
+    r"angina em repouso|sincope|crescimento rapido|retencao urinaria aguda|massa anexial|ca-125")
+CID_URGENTE = {"I200", "K403", "K400", "K420", "K430", "K800", "N132", "I832"}
+EVENTOS_DE_PIORA = {C.PRONTO_SOCORRO, C.INTERNACAO, C.BIOPSIA_POSITIVA, C.PROGRESSAO_IMAGEM, C.REAVALIACAO_PIORA}
 
 RISCO_PROCEDIMENTO_PADRAO = 3   # procedimento fora do catálogo conta como risco médio
 
 
-def sem_urgencia(achados: list[Achado]) -> bool:
-    """Definição conservadora de "sem urgência clínica" (a do verificador oficial)."""
-    return not ({a.codigo for a in achados} & NAO_CALMO)
+def sem_urgencia(dados: dict, achados: list[Achado]) -> bool:
+    """Definição conservadora de "sem urgência clínica" do verificador oficial."""
+    dor = str(dados.get("intensidade_dor_eva") or "").strip()
+    lim = str(dados.get("limitacao_funcional") or "").strip().lower() or "nenhuma"
+    piora = any(a.codigo in EVENTOS_DE_PIORA and a.evidencia.fonte == "evento" and a.origem == Origem.REGRA
+                for a in achados)
+    return (not oncologico(dados)
+            and (float(dor) if dor else 0) <= 3
+            and lim in ("nenhuma", "leve")
+            and cid(dados) not in CID_URGENTE
+            and not piora
+            and not KW_ALARME.search(str(dados.get("justificativa_clinica") or "").lower()))
 
 
 def oncologico(dados: dict) -> bool:

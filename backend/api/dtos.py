@@ -28,6 +28,10 @@ class EntradaIntegracao(DTO):
     resposta_llm: list[dict[str, Any]] | None = None
 
 
+class EntradaPularAte(DTO):
+    data: date
+
+
 class EntradaAvancarDia(DTO):
     dias: int = Field(1, ge=1, le=3650)
 

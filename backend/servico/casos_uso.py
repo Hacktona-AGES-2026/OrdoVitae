@@ -146,10 +146,15 @@ class ServicoFila:
             raise TransicaoInvalida("dias deve ser >= 1")
         for _ in range(dias):
             hoje = self.relogio.avancar(1)
-            with self.uow() as uow:
-                uow.historico.salvar_foto(hoje, self._fila(uow, hoje))
-                uow.commit()
+            self.fotografar_fila()
         return hoje
+
+    def fotografar_fila(self) -> None:
+        """Guarda a foto da fila oficial de hoje (alimenta posição anterior e a navegação por dia)."""
+        hoje = self.relogio.hoje()
+        with self.uow() as uow:
+            uow.historico.salvar_foto(hoje, self._fila(uow, hoje))
+            uow.commit()
 
     def consultar_simulacao(self) -> Simulacao:
         return Simulacao(self.relogio.hoje(), self.relogio.auto_aprovar)
@@ -276,7 +281,7 @@ class ServicoFila:
             estado, risco = estados[sid]
             achados = [a for a in por_sid[sid] if a.data_fato is None or a.data_fato <= hoje]
             itens.append(ItemFila(sid, estado.classe, estado.ordo_clinico, regras.data(sol["data_entrada_fila"]),
-                                  regras.oncologico(sol), regras.sem_urgencia(achados), risco.valor))
+                                  regras.oncologico(sol), regras.sem_urgencia(sol, achados), risco.valor))
         return ordenar(itens, hoje)
 
     def _risco(self, dados: dict) -> AvaliacaoRisco:

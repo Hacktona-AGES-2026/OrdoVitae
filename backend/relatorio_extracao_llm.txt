@@ -1,0 +1,1017 @@
+
+================================================================================
+EXTRAÇÃO EM LOTE COM LLM (deepseek-chat)
+Data de Início: 2026-10-24 10:01:56
+• Total de textos únicos a processar: 988 (que cobrem 2671 campos do banco)
+• Já processados anteriormente:       0
+• Arquivo de log em tempo real:       relatorio_extracao_llm.txt
+================================================================================
+[1/988] Refs:  1 | Tokens: 532 | Gasto: $0.0001 | 1 achado(s): BIOPSIA_POSITIVA
+[2/988] Refs:  1 | Tokens: 491 | Gasto: $0.0001 | 0 achados
+[3/988] Refs:  1 | Tokens: 532 | Gasto: $0.0002 | 1 achado(s): BIOPSIA_POSITIVA
+[4/988] Refs:  2 | Tokens: 529 | Gasto: $0.0003 | 1 achado(s): MELHORA
+[5/988] Refs:  1 | Tokens: 487 | Gasto: $0.0004 | 0 achados
+[6/988] Refs:  1 | Tokens: 510 | Gasto: $0.0004 | 0 achados
+[7/988] Refs:  1 | Tokens: 493 | Gasto: $0.0005 | 0 achados
+[8/988] Refs:  1 | Tokens: 510 | Gasto: $0.0006 | 0 achados
+[9/988] Refs:  1 | Tokens: 506 | Gasto: $0.0007 | 0 achados
+[10/988] Refs:  2 | Tokens: 485 | Gasto: $0.0007 | 0 achados
+[11/988] Refs:  1 | Tokens: 505 | Gasto: $0.0008 | 0 achados
+[12/988] Refs:  2 | Tokens: 488 | Gasto: $0.0009 | 0 achados
+[13/988] Refs:  1 | Tokens: 490 | Gasto: $0.0009 | 0 achados
+[14/988] Refs:  1 | Tokens: 531 | Gasto: $0.0010 | 0 achados
+[15/988] Refs:  1 | Tokens: 498 | Gasto: $0.0011 | 0 achados
+[16/988] Refs:  2 | Tokens: 502 | Gasto: $0.0012 | 0 achados
+[17/988] Refs:  1 | Tokens: 570 | Gasto: $0.0012 | 1 achado(s): PROGRESSAO_IMAGEM
+[18/988] Refs:  1 | Tokens: 507 | Gasto: $0.0013 | 0 achados
+[19/988] Refs:  1 | Tokens: 503 | Gasto: $0.0014 | 0 achados
+[20/988] Refs:  1 | Tokens: 505 | Gasto: $0.0014 | 0 achados
+[21/988] Refs:  1 | Tokens: 506 | Gasto: $0.0015 | 0 achados
+[22/988] Refs:  1 | Tokens: 475 | Gasto: $0.0016 | 0 achados
+[23/988] Refs:  3 | Tokens: 496 | Gasto: $0.0017 | 0 achados
+[24/988] Refs:  1 | Tokens: 498 | Gasto: $0.0017 | 0 achados
+[25/988] Refs:  3 | Tokens: 496 | Gasto: $0.0018 | 0 achados
+[26/988] Refs:  1 | Tokens: 500 | Gasto: $0.0019 | 0 achados
+[27/988] Refs:  2 | Tokens: 488 | Gasto: $0.0019 | 0 achados
+[28/988] Refs:  1 | Tokens: 485 | Gasto: $0.0020 | 0 achados
+[29/988] Refs:  1 | Tokens: 506 | Gasto: $0.0021 | 0 achados
+[30/988] Refs:  1 | Tokens: 493 | Gasto: $0.0021 | 0 achados
+[31/988] Refs:  1 | Tokens: 535 | Gasto: $0.0022 | 1 achado(s): PRONTO_SOCORRO
+[32/988] Refs:  1 | Tokens: 544 | Gasto: $0.0023 | 1 achado(s): BIOPSIA_POSITIVA
+[33/988] Refs:  1 | Tokens: 540 | Gasto: $0.0024 | 1 achado(s): BIOPSIA_POSITIVA
+[34/988] Refs:  1 | Tokens: 504 | Gasto: $0.0025 | 0 achados
+[35/988] Refs:  1 | Tokens: 514 | Gasto: $0.0025 | 0 achados
+[36/988] Refs:  2 | Tokens: 529 | Gasto: $0.0026 | 1 achado(s): BIOPSIA_POSITIVA
+[37/988] Refs:  1 | Tokens: 537 | Gasto: $0.0027 | 1 achado(s): BIOPSIA_POSITIVA
+[38/988] Refs:  1 | Tokens: 550 | Gasto: $0.0028 | 1 achado(s): BIOPSIA_POSITIVA
+
+================================================================================
+EXTRAÇÃO EM LOTE COM LLM (deepseek-chat)
+Data de Início: 2026-10-24 10:06:37
+• Total de textos pendentes:          950 (que cobrem 2623 campos do banco)
+• Já processados anteriormente:       48
+• Concorrência Paralela:              8 threads simultâneas
+• Arquivo de log em tempo real:       relatorio_extracao_llm.txt
+================================================================================
+[1/950] Refs:  1 | Tokens: 511 | Gasto: $0.0001 | 0 achados
+[2/950] Refs:  1 | Tokens: 554 | Gasto: $0.0002 | 1 achado(s): SINAL_ALARME
+[3/950] Refs:  4 | Tokens: 490 | Gasto: $0.0002 | 0 achados
+[4/950] Refs:  1 | Tokens: 507 | Gasto: $0.0003 | 0 achados
+[5/950] Refs:  1 | Tokens: 515 | Gasto: $0.0004 | 0 achados
+[6/950] Refs:  3 | Tokens: 497 | Gasto: $0.0004 | 0 achados
+[7/950] Refs:  1 | Tokens: 539 | Gasto: $0.0005 | 1 achado(s): PROGRESSAO_IMAGEM
+[8/950] Refs:  1 | Tokens: 505 | Gasto: $0.0006 | 0 achados
+[9/950] Refs:  1 | Tokens: 482 | Gasto: $0.0007 | 0 achados
+[10/950] Refs:  7 | Tokens: 472 | Gasto: $0.0007 | 0 achados
+[11/950] Refs:  1 | Tokens: 525 | Gasto: $0.0008 | 0 achados
+[12/950] Refs:  6 | Tokens: 495 | Gasto: $0.0009 | 0 achados
+[13/950] Refs:  3 | Tokens: 490 | Gasto: $0.0009 | 0 achados
+[14/950] Refs:  1 | Tokens: 488 | Gasto: $0.0010 | 0 achados
+[15/950] Refs:  2 | Tokens: 524 | Gasto: $0.0011 | 1 achado(s): INTERNACAO
+[16/950] Refs:  2 | Tokens: 501 | Gasto: $0.0011 | 0 achados
+[17/950] Refs:  1 | Tokens: 495 | Gasto: $0.0012 | 0 achados
+[18/950] Refs: 10 | Tokens: 473 | Gasto: $0.0013 | 0 achados
+[19/950] Refs:  1 | Tokens: 542 | Gasto: $0.0014 | 1 achado(s): PRONTO_SOCORRO
+[20/950] Refs:  1 | Tokens: 507 | Gasto: $0.0014 | 0 achados
+[21/950] Refs:  1 | Tokens: 532 | Gasto: $0.0015 | 1 achado(s): BIOPSIA_POSITIVA
+[22/950] Refs:  1 | Tokens: 539 | Gasto: $0.0016 | 1 achado(s): BIOPSIA_POSITIVA
+[23/950] Refs:  1 | Tokens: 499 | Gasto: $0.0017 | 0 achados
+[24/950] Refs: 12 | Tokens: 491 | Gasto: $0.0017 | 0 achados
+[25/950] Refs:  2 | Tokens: 491 | Gasto: $0.0018 | 0 achados
+[26/950] Refs:  3 | Tokens: 476 | Gasto: $0.0019 | 0 achados
+[27/950] Refs:  1 | Tokens: 504 | Gasto: $0.0019 | 0 achados
+[28/950] Refs:  1 | Tokens: 500 | Gasto: $0.0020 | 0 achados
+[29/950] Refs:  2 | Tokens: 562 | Gasto: $0.0021 | 1 achado(s): INTERNACAO
+[30/950] Refs:  1 | Tokens: 541 | Gasto: $0.0022 | 1 achado(s): BIOPSIA_POSITIVA
+[31/950] Refs:  2 | Tokens: 496 | Gasto: $0.0022 | 0 achados
+[32/950] Refs:  1 | Tokens: 498 | Gasto: $0.0023 | 0 achados
+[33/950] Refs:  1 | Tokens: 501 | Gasto: $0.0024 | 0 achados
+[34/950] Refs:  1 | Tokens: 495 | Gasto: $0.0025 | 0 achados
+[35/950] Refs:  1 | Tokens: 495 | Gasto: $0.0025 | 0 achados
+[36/950] Refs:  1 | Tokens: 504 | Gasto: $0.0026 | 0 achados
+[37/950] Refs:  1 | Tokens: 492 | Gasto: $0.0027 | 0 achados
+[38/950] Refs:  5 | Tokens: 510 | Gasto: $0.0027 | 0 achados
+[39/950] Refs:  1 | Tokens: 501 | Gasto: $0.0028 | 0 achados
+[40/950] Refs:  1 | Tokens: 534 | Gasto: $0.0029 | 1 achado(s): PRONTO_SOCORRO
+[41/950] Refs:  1 | Tokens: 508 | Gasto: $0.0030 | 0 achados
+[42/950] Refs:  1 | Tokens: 513 | Gasto: $0.0030 | 0 achados
+[43/950] Refs:  1 | Tokens: 501 | Gasto: $0.0031 | 0 achados
+[44/950] Refs:  1 | Tokens: 503 | Gasto: $0.0032 | 0 achados
+[45/950] Refs:  1 | Tokens: 492 | Gasto: $0.0032 | 0 achados
+[46/950] Refs:  1 | Tokens: 494 | Gasto: $0.0033 | 0 achados
+[47/950] Refs:  3 | Tokens: 490 | Gasto: $0.0034 | 0 achados
+[48/950] Refs:  1 | Tokens: 494 | Gasto: $0.0034 | 0 achados
+[49/950] Refs:  2 | Tokens: 535 | Gasto: $0.0035 | 0 achados
+[50/950] Refs:  1 | Tokens: 506 | Gasto: $0.0036 | 0 achados
+[51/950] Refs:  1 | Tokens: 582 | Gasto: $0.0037 | 1 achado(s): PROGRESSAO_IMAGEM
+[52/950] Refs:  1 | Tokens: 517 | Gasto: $0.0038 | 0 achados
+[53/950] Refs:  1 | Tokens: 528 | Gasto: $0.0038 | 1 achado(s): BIOPSIA_POSITIVA
+[54/950] Refs:  1 | Tokens: 511 | Gasto: $0.0039 | 0 achados
+[55/950] Refs:  1 | Tokens: 496 | Gasto: $0.0040 | 0 achados
+[56/950] Refs:  1 | Tokens: 495 | Gasto: $0.0040 | 0 achados
+[57/950] Refs:  1 | Tokens: 524 | Gasto: $0.0041 | 1 achado(s): BIOPSIA_POSITIVA
+[58/950] Refs:  1 | Tokens: 572 | Gasto: $0.0042 | 2 achado(s): PRONTO_SOCORRO, SINAL_ALARME
+[59/950] Refs:  1 | Tokens: 538 | Gasto: $0.0043 | 1 achado(s): BIOPSIA_POSITIVA
+[60/950] Refs:  1 | Tokens: 525 | Gasto: $0.0044 | 1 achado(s): BIOPSIA_POSITIVA
+[61/950] Refs:  4 | Tokens: 487 | Gasto: $0.0044 | 0 achados
+[62/950] Refs:  1 | Tokens: 492 | Gasto: $0.0045 | 0 achados
+[63/950] Refs:  1 | Tokens: 496 | Gasto: $0.0046 | 0 achados
+[64/950] Refs:  1 | Tokens: 488 | Gasto: $0.0046 | 0 achados
+[65/950] Refs:  2 | Tokens: 495 | Gasto: $0.0047 | 0 achados
+[66/950] Refs:  1 | Tokens: 539 | Gasto: $0.0048 | 1 achado(s): PROGRESSAO_IMAGEM
+[67/950] Refs:  1 | Tokens: 505 | Gasto: $0.0049 | 0 achados
+[68/950] Refs:  1 | Tokens: 508 | Gasto: $0.0049 | 0 achados
+[69/950] Refs:  4 | Tokens: 485 | Gasto: $0.0050 | 0 achados
+[70/950] Refs:  1 | Tokens: 531 | Gasto: $0.0051 | 1 achado(s): BIOPSIA_POSITIVA
+[71/950] Refs:  4 | Tokens: 476 | Gasto: $0.0052 | 0 achados
+[72/950] Refs:  1 | Tokens: 497 | Gasto: $0.0052 | 0 achados
+[73/950] Refs:  1 | Tokens: 500 | Gasto: $0.0053 | 0 achados
+[74/950] Refs:  1 | Tokens: 515 | Gasto: $0.0054 | 0 achados
+[75/950] Refs:  1 | Tokens: 506 | Gasto: $0.0054 | 0 achados
+[76/950] Refs:  1 | Tokens: 519 | Gasto: $0.0055 | 0 achados
+[77/950] Refs:  1 | Tokens: 496 | Gasto: $0.0056 | 0 achados
+[78/950] Refs:  2 | Tokens: 487 | Gasto: $0.0056 | 0 achados
+[79/950] Refs:  1 | Tokens: 535 | Gasto: $0.0057 | 1 achado(s): BIOPSIA_POSITIVA
+[80/950] Refs:  3 | Tokens: 492 | Gasto: $0.0058 | 0 achados
+[81/950] Refs:  1 | Tokens: 491 | Gasto: $0.0059 | 0 achados
+[82/950] Refs:  1 | Tokens: 563 | Gasto: $0.0060 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[83/950] Refs:  1 | Tokens: 500 | Gasto: $0.0060 | 0 achados
+[84/950] Refs:  1 | Tokens: 502 | Gasto: $0.0061 | 0 achados
+[85/950] Refs:  1 | Tokens: 500 | Gasto: $0.0062 | 0 achados
+[86/950] Refs:  1 | Tokens: 615 | Gasto: $0.0063 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[87/950] Refs:  2 | Tokens: 494 | Gasto: $0.0063 | 0 achados
+[88/950] Refs:  4 | Tokens: 495 | Gasto: $0.0064 | 0 achados
+[89/950] Refs:  6 | Tokens: 503 | Gasto: $0.0065 | 0 achados
+[90/950] Refs:  1 | Tokens: 492 | Gasto: $0.0065 | 0 achados
+[91/950] Refs:  1 | Tokens: 488 | Gasto: $0.0066 | 0 achados
+[92/950] Refs:  2 | Tokens: 478 | Gasto: $0.0067 | 0 achados
+[93/950] Refs:  3 | Tokens: 497 | Gasto: $0.0067 | 0 achados
+[94/950] Refs:  1 | Tokens: 515 | Gasto: $0.0068 | 0 achados
+[95/950] Refs:  1 | Tokens: 503 | Gasto: $0.0069 | 0 achados
+[96/950] Refs:  2 | Tokens: 493 | Gasto: $0.0070 | 0 achados
+[97/950] Refs:  1 | Tokens: 491 | Gasto: $0.0070 | 0 achados
+[98/950] Refs:  2 | Tokens: 543 | Gasto: $0.0071 | 1 achado(s): BIOPSIA_POSITIVA
+[99/950] Refs:  1 | Tokens: 544 | Gasto: $0.0072 | 1 achado(s): BIOPSIA_POSITIVA
+[100/950] Refs:  1 | Tokens: 509 | Gasto: $0.0073 | 0 achados
+[101/950] Refs:  1 | Tokens: 516 | Gasto: $0.0073 | 0 achados
+[102/950] Refs:  1 | Tokens: 496 | Gasto: $0.0074 | 0 achados
+[103/950] Refs:  1 | Tokens: 481 | Gasto: $0.0075 | 0 achados
+[104/950] Refs:  1 | Tokens: 502 | Gasto: $0.0075 | 0 achados
+[105/950] Refs:  1 | Tokens: 508 | Gasto: $0.0076 | 0 achados
+[106/950] Refs:  3 | Tokens: 540 | Gasto: $0.0077 | 1 achado(s): PRONTO_SOCORRO
+[107/950] Refs:  1 | Tokens: 553 | Gasto: $0.0078 | 1 achado(s): BIOPSIA_POSITIVA
+[108/950] Refs:  1 | Tokens: 535 | Gasto: $0.0079 | 0 achados
+[109/950] Refs:  2 | Tokens: 539 | Gasto: $0.0079 | 1 achado(s): PROGRESSAO_IMAGEM
+[110/950] Refs:  1 | Tokens: 504 | Gasto: $0.0080 | 0 achados
+[111/950] Refs:  1 | Tokens: 500 | Gasto: $0.0081 | 0 achados
+[112/950] Refs:  4 | Tokens: 489 | Gasto: $0.0081 | 0 achados
+[113/950] Refs:  1 | Tokens: 524 | Gasto: $0.0082 | 1 achado(s): BIOPSIA_POSITIVA
+[114/950] Refs:  2 | Tokens: 492 | Gasto: $0.0083 | 0 achados
+[115/950] Refs:  1 | Tokens: 506 | Gasto: $0.0084 | 0 achados
+[116/950] Refs:  6 | Tokens: 508 | Gasto: $0.0084 | 0 achados
+[117/950] Refs:  1 | Tokens: 539 | Gasto: $0.0085 | 0 achados
+[118/950] Refs:  1 | Tokens: 493 | Gasto: $0.0086 | 0 achados
+[119/950] Refs:  1 | Tokens: 493 | Gasto: $0.0086 | 0 achados
+[120/950] Refs:  1 | Tokens: 513 | Gasto: $0.0087 | 0 achados
+[121/950] Refs:  1 | Tokens: 496 | Gasto: $0.0088 | 0 achados
+[122/950] Refs:  1 | Tokens: 505 | Gasto: $0.0089 | 0 achados
+[123/950] Refs:  1 | Tokens: 504 | Gasto: $0.0089 | 0 achados
+[124/950] Refs:  1 | Tokens: 513 | Gasto: $0.0090 | 0 achados
+[125/950] Refs:  2 | Tokens: 509 | Gasto: $0.0091 | 0 achados
+[126/950] Refs:  1 | Tokens: 492 | Gasto: $0.0091 | 0 achados
+[127/950] Refs:  1 | Tokens: 552 | Gasto: $0.0092 | 1 achado(s): INTERNACAO
+[128/950] Refs:  1 | Tokens: 504 | Gasto: $0.0093 | 0 achados
+[129/950] Refs:  1 | Tokens: 496 | Gasto: $0.0094 | 0 achados
+[130/950] Refs:  5 | Tokens: 485 | Gasto: $0.0094 | 0 achados
+[131/950] Refs:  1 | Tokens: 496 | Gasto: $0.0095 | 0 achados
+[132/950] Refs:  1 | Tokens: 500 | Gasto: $0.0096 | 0 achados
+[133/950] Refs:  1 | Tokens: 503 | Gasto: $0.0096 | 0 achados
+[134/950] Refs:  1 | Tokens: 525 | Gasto: $0.0097 | 0 achados
+[135/950] Refs:  1 | Tokens: 488 | Gasto: $0.0098 | 0 achados
+[136/950] Refs:  4 | Tokens: 501 | Gasto: $0.0099 | 0 achados
+[137/950] Refs:  2 | Tokens: 535 | Gasto: $0.0099 | 1 achado(s): BIOPSIA_POSITIVA
+[138/950] Refs:  1 | Tokens: 505 | Gasto: $0.0100 | 0 achados
+[139/950] Refs:  1 | Tokens: 520 | Gasto: $0.0101 | 0 achados
+[140/950] Refs:  2 | Tokens: 534 | Gasto: $0.0102 | 1 achado(s): BIOPSIA_POSITIVA
+[141/950] Refs:  1 | Tokens: 528 | Gasto: $0.0102 | 1 achado(s): BIOPSIA_POSITIVA
+[142/950] Refs:  1 | Tokens: 608 | Gasto: $0.0103 | 2 achado(s): BIOPSIA_POSITIVA, PROGRESSAO_IMAGEM
+[143/950] Refs:  2 | Tokens: 491 | Gasto: $0.0104 | 0 achados
+[144/950] Refs:  1 | Tokens: 519 | Gasto: $0.0105 | 0 achados
+[145/950] Refs:  1 | Tokens: 505 | Gasto: $0.0105 | 0 achados
+[146/950] Refs:  1 | Tokens: 507 | Gasto: $0.0106 | 0 achados
+[147/950] Refs:  1 | Tokens: 498 | Gasto: $0.0107 | 0 achados
+[148/950] Refs:  1 | Tokens: 502 | Gasto: $0.0108 | 0 achados
+[149/950] Refs:  1 | Tokens: 493 | Gasto: $0.0108 | 0 achados
+[150/950] Refs:  1 | Tokens: 500 | Gasto: $0.0109 | 0 achados
+[151/950] Refs:  1 | Tokens: 502 | Gasto: $0.0110 | 0 achados
+[152/950] Refs:  1 | Tokens: 498 | Gasto: $0.0110 | 0 achados
+[153/950] Refs:  1 | Tokens: 507 | Gasto: $0.0111 | 0 achados
+[154/950] Refs:  1 | Tokens: 506 | Gasto: $0.0112 | 0 achados
+[155/950] Refs:  1 | Tokens: 522 | Gasto: $0.0113 | 0 achados
+[156/950] Refs:  1 | Tokens: 503 | Gasto: $0.0113 | 0 achados
+[157/950] Refs:  1 | Tokens: 520 | Gasto: $0.0114 | 0 achados
+[158/950] Refs:  2 | Tokens: 491 | Gasto: $0.0115 | 0 achados
+[159/950] Refs:  1 | Tokens: 502 | Gasto: $0.0115 | 0 achados
+[160/950] Refs:  1 | Tokens: 520 | Gasto: $0.0116 | 0 achados
+[161/950] Refs:  4 | Tokens: 495 | Gasto: $0.0117 | 0 achados
+[162/950] Refs:  2 | Tokens: 534 | Gasto: $0.0118 | 1 achado(s): BIOPSIA_POSITIVA
+[163/950] Refs:  2 | Tokens: 503 | Gasto: $0.0118 | 0 achados
+[164/950] Refs:  1 | Tokens: 499 | Gasto: $0.0119 | 0 achados
+[165/950] Refs:  1 | Tokens: 486 | Gasto: $0.0120 | 0 achados
+[166/950] Refs:  1 | Tokens: 497 | Gasto: $0.0120 | 0 achados
+[167/950] Refs:  1 | Tokens: 498 | Gasto: $0.0121 | 0 achados
+[168/950] Refs:  3 | Tokens: 489 | Gasto: $0.0122 | 0 achados
+[169/950] Refs:  1 | Tokens: 516 | Gasto: $0.0123 | 0 achados
+[170/950] Refs:  2 | Tokens: 490 | Gasto: $0.0123 | 0 achados
+[171/950] Refs:  1 | Tokens: 522 | Gasto: $0.0124 | 0 achados
+[172/950] Refs:  1 | Tokens: 475 | Gasto: $0.0125 | 0 achados
+[173/950] Refs:  1 | Tokens: 506 | Gasto: $0.0125 | 0 achados
+[174/950] Refs:  2 | Tokens: 512 | Gasto: $0.0126 | 0 achados
+[175/950] Refs:  1 | Tokens: 494 | Gasto: $0.0127 | 0 achados
+[176/950] Refs:  1 | Tokens: 516 | Gasto: $0.0127 | 0 achados
+[177/950] Refs:  1 | Tokens: 506 | Gasto: $0.0128 | 0 achados
+[178/950] Refs:  1 | Tokens: 515 | Gasto: $0.0129 | 0 achados
+[179/950] Refs:  2 | Tokens: 487 | Gasto: $0.0130 | 0 achados
+[180/950] Refs:  1 | Tokens: 487 | Gasto: $0.0130 | 0 achados
+[181/950] Refs:  1 | Tokens: 496 | Gasto: $0.0131 | 0 achados
+[182/950] Refs:  6 | Tokens: 472 | Gasto: $0.0132 | 0 achados
+[183/950] Refs:  1 | Tokens: 497 | Gasto: $0.0132 | 0 achados
+[184/950] Refs:  1 | Tokens: 566 | Gasto: $0.0133 | 1 achado(s): HBA1C_DESCONTROLADA
+[185/950] Refs:  1 | Tokens: 633 | Gasto: $0.0134 | 3 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME, SINAL_ALARME
+[186/950] Refs:  1 | Tokens: 488 | Gasto: $0.0135 | 0 achados
+[187/950] Refs:  1 | Tokens: 513 | Gasto: $0.0136 | 0 achados
+[188/950] Refs:  1 | Tokens: 490 | Gasto: $0.0136 | 0 achados
+[189/950] Refs:  2 | Tokens: 529 | Gasto: $0.0137 | 1 achado(s): BIOPSIA_POSITIVA
+[190/950] Refs:  1 | Tokens: 494 | Gasto: $0.0138 | 0 achados
+[191/950] Refs:  1 | Tokens: 495 | Gasto: $0.0138 | 0 achados
+[192/950] Refs:  1 | Tokens: 529 | Gasto: $0.0139 | 1 achado(s): MELHORA
+[193/950] Refs:  1 | Tokens: 490 | Gasto: $0.0140 | 0 achados
+[194/950] Refs:  2 | Tokens: 486 | Gasto: $0.0141 | 0 achados
+[195/950] Refs:  1 | Tokens: 542 | Gasto: $0.0141 | 1 achado(s): INTERNACAO
+[196/950] Refs:  1 | Tokens: 518 | Gasto: $0.0142 | 0 achados
+[197/950] Refs:  1 | Tokens: 525 | Gasto: $0.0143 | 1 achado(s): BIOPSIA_POSITIVA
+[198/950] Refs:  2 | Tokens: 496 | Gasto: $0.0144 | 0 achados
+[199/950] Refs:  1 | Tokens: 506 | Gasto: $0.0144 | 0 achados
+[200/950] Refs:  1 | Tokens: 506 | Gasto: $0.0145 | 0 achados
+[201/950] Refs:  1 | Tokens: 477 | Gasto: $0.0146 | 0 achados
+[202/950] Refs:  3 | Tokens: 496 | Gasto: $0.0146 | 0 achados
+[203/950] Refs:  1 | Tokens: 488 | Gasto: $0.0147 | 0 achados
+[204/950] Refs:  1 | Tokens: 599 | Gasto: $0.0148 | 2 achado(s): SINAL_ALARME, PROGRESSAO_IMAGEM
+[205/950] Refs:  1 | Tokens: 495 | Gasto: $0.0149 | 0 achados
+[206/950] Refs:  1 | Tokens: 488 | Gasto: $0.0149 | 0 achados
+[207/950] Refs:  1 | Tokens: 560 | Gasto: $0.0150 | 1 achado(s): BIOPSIA_POSITIVA
+[208/950] Refs:  1 | Tokens: 497 | Gasto: $0.0151 | 0 achados
+[209/950] Refs:  5 | Tokens: 532 | Gasto: $0.0152 | 1 achado(s): BIOPSIA_POSITIVA
+[210/950] Refs:  1 | Tokens: 482 | Gasto: $0.0152 | 0 achados
+[211/950] Refs:  1 | Tokens: 521 | Gasto: $0.0153 | 0 achados
+[212/950] Refs:  1 | Tokens: 492 | Gasto: $0.0154 | 0 achados
+[213/950] Refs:  1 | Tokens: 501 | Gasto: $0.0155 | 0 achados
+[214/950] Refs:  1 | Tokens: 498 | Gasto: $0.0155 | 0 achados
+[215/950] Refs:  1 | Tokens: 563 | Gasto: $0.0156 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[216/950] Refs:  1 | Tokens: 477 | Gasto: $0.0157 | 0 achados
+[217/950] Refs:  5 | Tokens: 484 | Gasto: $0.0158 | 0 achados
+[218/950] Refs:  1 | Tokens: 496 | Gasto: $0.0158 | 0 achados
+[219/950] Refs:  2 | Tokens: 509 | Gasto: $0.0159 | 0 achados
+[220/950] Refs:  1 | Tokens: 488 | Gasto: $0.0160 | 0 achados
+[221/950] Refs:  1 | Tokens: 481 | Gasto: $0.0160 | 0 achados
+[222/950] Refs:  1 | Tokens: 494 | Gasto: $0.0161 | 0 achados
+[223/950] Refs:  1 | Tokens: 496 | Gasto: $0.0162 | 0 achados
+[224/950] Refs:  2 | Tokens: 506 | Gasto: $0.0162 | 0 achados
+[225/950] Refs:  1 | Tokens: 499 | Gasto: $0.0163 | 0 achados
+[226/950] Refs:  1 | Tokens: 496 | Gasto: $0.0164 | 0 achados
+[227/950] Refs:  2 | Tokens: 540 | Gasto: $0.0165 | 1 achado(s): BIOPSIA_POSITIVA
+[228/950] Refs:  1 | Tokens: 499 | Gasto: $0.0165 | 0 achados
+[229/950] Refs:  1 | Tokens: 494 | Gasto: $0.0166 | 0 achados
+[230/950] Refs:  1 | Tokens: 496 | Gasto: $0.0167 | 0 achados
+[231/950] Refs:  1 | Tokens: 510 | Gasto: $0.0167 | 0 achados
+[232/950] Refs:  1 | Tokens: 521 | Gasto: $0.0168 | 1 achado(s): BIOPSIA_POSITIVA
+[233/950] Refs:  1 | Tokens: 531 | Gasto: $0.0169 | 1 achado(s): PIORA_RELATADA
+[234/950] Refs:  1 | Tokens: 490 | Gasto: $0.0170 | 0 achados
+[235/950] Refs:  1 | Tokens: 507 | Gasto: $0.0170 | 0 achados
+[236/950] Refs:  1 | Tokens: 534 | Gasto: $0.0171 | 1 achado(s): BIOPSIA_POSITIVA
+[237/950] Refs:  1 | Tokens: 626 | Gasto: $0.0172 | 3 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME, SINAL_ALARME
+[238/950] Refs:  1 | Tokens: 509 | Gasto: $0.0173 | 0 achados
+[239/950] Refs:  1 | Tokens: 501 | Gasto: $0.0174 | 0 achados
+[240/950] Refs:  2 | Tokens: 572 | Gasto: $0.0175 | 1 achado(s): BIOPSIA_POSITIVA
+[241/950] Refs:  2 | Tokens: 500 | Gasto: $0.0175 | 0 achados
+[242/950] Refs:  1 | Tokens: 489 | Gasto: $0.0176 | 0 achados
+[243/950] Refs:  2 | Tokens: 503 | Gasto: $0.0177 | 0 achados
+[244/950] Refs:  1 | Tokens: 500 | Gasto: $0.0177 | 0 achados
+[245/950] Refs:  2 | Tokens: 503 | Gasto: $0.0178 | 0 achados
+[246/950] Refs:  1 | Tokens: 549 | Gasto: $0.0179 | 1 achado(s): BIOPSIA_POSITIVA
+[247/950] Refs:  1 | Tokens: 495 | Gasto: $0.0180 | 0 achados
+[248/950] Refs:  1 | Tokens: 646 | Gasto: $0.0181 | 3 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME, SINAL_ALARME
+[249/950] Refs:  4 | Tokens: 496 | Gasto: $0.0181 | 0 achados
+[250/950] Refs:  1 | Tokens: 518 | Gasto: $0.0182 | 0 achados
+[251/950] Refs:  1 | Tokens: 543 | Gasto: $0.0183 | 1 achado(s): PROGRESSAO_IMAGEM
+[252/950] Refs:  1 | Tokens: 504 | Gasto: $0.0184 | 0 achados
+[253/950] Refs:  3 | Tokens: 582 | Gasto: $0.0184 | 2 achado(s): PRONTO_SOCORRO, SINAL_ALARME
+[254/950] Refs:  1 | Tokens: 499 | Gasto: $0.0185 | 0 achados
+[255/950] Refs:  1 | Tokens: 623 | Gasto: $0.0186 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[256/950] Refs:  1 | Tokens: 501 | Gasto: $0.0187 | 0 achados
+[257/950] Refs:  1 | Tokens: 500 | Gasto: $0.0188 | 0 achados
+[258/950] Refs:  1 | Tokens: 594 | Gasto: $0.0188 | 2 achado(s): PIORA_RELATADA, SINAL_ALARME
+[259/950] Refs:  2 | Tokens: 563 | Gasto: $0.0189 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[260/950] Refs:  1 | Tokens: 501 | Gasto: $0.0190 | 0 achados
+[261/950] Refs:  1 | Tokens: 501 | Gasto: $0.0191 | 0 achados
+[262/950] Refs:  1 | Tokens: 506 | Gasto: $0.0191 | 0 achados
+[263/950] Refs:  1 | Tokens: 484 | Gasto: $0.0192 | 0 achados
+[264/950] Refs:  1 | Tokens: 507 | Gasto: $0.0193 | 0 achados
+[265/950] Refs:  1 | Tokens: 512 | Gasto: $0.0194 | 0 achados
+[266/950] Refs:  1 | Tokens: 496 | Gasto: $0.0194 | 0 achados
+[267/950] Refs:  2 | Tokens: 571 | Gasto: $0.0195 | 1 achado(s): SINAL_ALARME
+[268/950] Refs:  1 | Tokens: 498 | Gasto: $0.0196 | 0 achados
+[269/950] Refs:  1 | Tokens: 501 | Gasto: $0.0197 | 0 achados
+[270/950] Refs:  1 | Tokens: 512 | Gasto: $0.0197 | 0 achados
+[271/950] Refs:  1 | Tokens: 485 | Gasto: $0.0198 | 0 achados
+[272/950] Refs:  2 | Tokens: 488 | Gasto: $0.0199 | 0 achados
+[273/950] Refs:  2 | Tokens: 495 | Gasto: $0.0199 | 0 achados
+[274/950] Refs:  1 | Tokens: 496 | Gasto: $0.0200 | 0 achados
+[275/950] Refs:  1 | Tokens: 522 | Gasto: $0.0201 | 0 achados
+[276/950] Refs:  1 | Tokens: 504 | Gasto: $0.0201 | 0 achados
+[277/950] Refs:  1 | Tokens: 545 | Gasto: $0.0202 | 1 achado(s): PRONTO_SOCORRO
+[278/950] Refs:  2 | Tokens: 486 | Gasto: $0.0203 | 0 achados
+[279/950] Refs:  1 | Tokens: 585 | Gasto: $0.0204 | 2 achado(s): PRONTO_SOCORRO, PRONTO_SOCORRO
+[280/950] Refs:  1 | Tokens: 538 | Gasto: $0.0205 | 1 achado(s): MELHORA
+[281/950] Refs:  1 | Tokens: 493 | Gasto: $0.0205 | 0 achados
+[282/950] Refs:  1 | Tokens: 506 | Gasto: $0.0206 | 0 achados
+[283/950] Refs:  1 | Tokens: 508 | Gasto: $0.0207 | 0 achados
+[284/950] Refs:  1 | Tokens: 498 | Gasto: $0.0208 | 0 achados
+[285/950] Refs:  1 | Tokens: 538 | Gasto: $0.0208 | 1 achado(s): PROGRESSAO_IMAGEM
+[286/950] Refs:  1 | Tokens: 500 | Gasto: $0.0209 | 0 achados
+[287/950] Refs:  5 | Tokens: 506 | Gasto: $0.0210 | 0 achados
+[288/950] Refs:  1 | Tokens: 616 | Gasto: $0.0211 | 2 achado(s): PRONTO_SOCORRO, PROGRESSAO_IMAGEM
+[289/950] Refs:  2 | Tokens: 493 | Gasto: $0.0211 | 0 achados
+[290/950] Refs:  1 | Tokens: 487 | Gasto: $0.0212 | 0 achados
+[291/950] Refs:  2 | Tokens: 497 | Gasto: $0.0213 | 0 achados
+[292/950] Refs:  1 | Tokens: 494 | Gasto: $0.0213 | 0 achados
+[293/950] Refs:  1 | Tokens: 504 | Gasto: $0.0214 | 0 achados
+[294/950] Refs:  1 | Tokens: 497 | Gasto: $0.0215 | 0 achados
+[295/950] Refs:  2 | Tokens: 489 | Gasto: $0.0216 | 0 achados
+[296/950] Refs:  2 | Tokens: 532 | Gasto: $0.0216 | 1 achado(s): PRONTO_SOCORRO
+[297/950] Refs:  2 | Tokens: 506 | Gasto: $0.0217 | 0 achados
+[298/950] Refs:  2 | Tokens: 506 | Gasto: $0.0218 | 0 achados
+[299/950] Refs:  1 | Tokens: 501 | Gasto: $0.0218 | 0 achados
+[300/950] Refs:  2 | Tokens: 485 | Gasto: $0.0219 | 0 achados
+[301/950] Refs:  1 | Tokens: 504 | Gasto: $0.0220 | 0 achados
+[302/950] Refs:  1 | Tokens: 522 | Gasto: $0.0221 | 0 achados
+[303/950] Refs:  1 | Tokens: 552 | Gasto: $0.0221 | 1 achado(s): BIOPSIA_POSITIVA
+[304/950] Refs:  1 | Tokens: 510 | Gasto: $0.0222 | 0 achados
+[305/950] Refs:  1 | Tokens: 503 | Gasto: $0.0223 | 0 achados
+[306/950] Refs:  1 | Tokens: 502 | Gasto: $0.0224 | 0 achados
+[307/950] Refs:  1 | Tokens: 607 | Gasto: $0.0225 | 2 achado(s): SINAL_ALARME, HBA1C_DESCONTROLADA
+[308/950] Refs:  1 | Tokens: 510 | Gasto: $0.0225 | 0 achados
+[309/950] Refs:  1 | Tokens: 544 | Gasto: $0.0226 | 1 achado(s): BIOPSIA_POSITIVA
+[310/950] Refs:  2 | Tokens: 491 | Gasto: $0.0227 | 0 achados
+[311/950] Refs:  1 | Tokens: 496 | Gasto: $0.0227 | 0 achados
+[312/950] Refs:  1 | Tokens: 502 | Gasto: $0.0228 | 0 achados
+[313/950] Refs:  1 | Tokens: 534 | Gasto: $0.0229 | 1 achado(s): BIOPSIA_POSITIVA
+[314/950] Refs:  1 | Tokens: 543 | Gasto: $0.0230 | 1 achado(s): BIOPSIA_POSITIVA
+[315/950] Refs:  1 | Tokens: 506 | Gasto: $0.0230 | 0 achados
+[316/950] Refs:  1 | Tokens: 503 | Gasto: $0.0231 | 0 achados
+[317/950] Refs:  1 | Tokens: 492 | Gasto: $0.0232 | 0 achados
+[318/950] Refs:  1 | Tokens: 515 | Gasto: $0.0233 | 0 achados
+[319/950] Refs:  1 | Tokens: 574 | Gasto: $0.0234 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[320/950] Refs:  1 | Tokens: 503 | Gasto: $0.0234 | 0 achados
+[321/950] Refs:  2 | Tokens: 568 | Gasto: $0.0235 | 1 achado(s): BIOPSIA_POSITIVA
+[322/950] Refs:  1 | Tokens: 537 | Gasto: $0.0236 | 1 achado(s): BIOPSIA_POSITIVA
+[323/950] Refs:  1 | Tokens: 502 | Gasto: $0.0237 | 0 achados
+[324/950] Refs:  1 | Tokens: 556 | Gasto: $0.0237 | 1 achado(s): BIOPSIA_POSITIVA
+[325/950] Refs:  1 | Tokens: 512 | Gasto: $0.0238 | 0 achados
+[326/950] Refs:  2 | Tokens: 504 | Gasto: $0.0239 | 0 achados
+[327/950] Refs:  1 | Tokens: 503 | Gasto: $0.0240 | 0 achados
+[328/950] Refs:  1 | Tokens: 485 | Gasto: $0.0240 | 0 achados
+[329/950] Refs:  1 | Tokens: 490 | Gasto: $0.0241 | 0 achados
+[330/950] Refs:  1 | Tokens: 521 | Gasto: $0.0242 | 1 achado(s): BIOPSIA_POSITIVA
+[331/950] Refs:  1 | Tokens: 523 | Gasto: $0.0242 | 0 achados
+[332/950] Refs:  1 | Tokens: 490 | Gasto: $0.0243 | 0 achados
+[333/950] Refs:  1 | Tokens: 551 | Gasto: $0.0244 | 1 achado(s): PRONTO_SOCORRO
+[334/950] Refs:  2 | Tokens: 501 | Gasto: $0.0245 | 0 achados
+[335/950] Refs:  1 | Tokens: 519 | Gasto: $0.0245 | 0 achados
+[336/950] Refs:  1 | Tokens: 496 | Gasto: $0.0246 | 0 achados
+[337/950] Refs:  1 | Tokens: 517 | Gasto: $0.0247 | 0 achados
+[338/950] Refs:  1 | Tokens: 533 | Gasto: $0.0248 | 1 achado(s): BIOPSIA_POSITIVA
+[339/950] Refs:  1 | Tokens: 491 | Gasto: $0.0248 | 0 achados
+[340/950] Refs:  3 | Tokens: 488 | Gasto: $0.0249 | 0 achados
+[341/950] Refs:  2 | Tokens: 486 | Gasto: $0.0250 | 0 achados
+[342/950] Refs:  1 | Tokens: 504 | Gasto: $0.0250 | 0 achados
+[343/950] Refs:  1 | Tokens: 499 | Gasto: $0.0251 | 0 achados
+[344/950] Refs:  2 | Tokens: 503 | Gasto: $0.0252 | 0 achados
+[345/950] Refs:  2 | Tokens: 504 | Gasto: $0.0252 | 0 achados
+[346/950] Refs:  1 | Tokens: 526 | Gasto: $0.0253 | 0 achados
+[347/950] Refs:  1 | Tokens: 507 | Gasto: $0.0254 | 0 achados
+[348/950] Refs:  1 | Tokens: 482 | Gasto: $0.0255 | 0 achados
+[349/950] Refs:  1 | Tokens: 505 | Gasto: $0.0255 | 0 achados
+[350/950] Refs:  1 | Tokens: 495 | Gasto: $0.0256 | 0 achados
+[351/950] Refs:  1 | Tokens: 491 | Gasto: $0.0257 | 0 achados
+[352/950] Refs:  2 | Tokens: 499 | Gasto: $0.0257 | 0 achados
+[353/950] Refs:  1 | Tokens: 506 | Gasto: $0.0258 | 0 achados
+[354/950] Refs:  1 | Tokens: 497 | Gasto: $0.0259 | 0 achados
+[355/950] Refs:  1 | Tokens: 504 | Gasto: $0.0260 | 0 achados
+[356/950] Refs:  1 | Tokens: 511 | Gasto: $0.0260 | 0 achados
+[357/950] Refs:  1 | Tokens: 506 | Gasto: $0.0261 | 0 achados
+[358/950] Refs:  1 | Tokens: 530 | Gasto: $0.0262 | 0 achados
+[359/950] Refs:  1 | Tokens: 507 | Gasto: $0.0262 | 0 achados
+[360/950] Refs:  1 | Tokens: 488 | Gasto: $0.0263 | 0 achados
+[361/950] Refs:  1 | Tokens: 502 | Gasto: $0.0264 | 0 achados
+[362/950] Refs:  1 | Tokens: 482 | Gasto: $0.0264 | 0 achados
+[363/950] Refs:  2 | Tokens: 533 | Gasto: $0.0265 | 1 achado(s): SINAL_ALARME
+[364/950] Refs:  1 | Tokens: 547 | Gasto: $0.0266 | 1 achado(s): SINAL_ALARME
+[365/950] Refs:  1 | Tokens: 547 | Gasto: $0.0267 | 1 achado(s): HBA1C_DESCONTROLADA
+[366/950] Refs:  1 | Tokens: 492 | Gasto: $0.0268 | 0 achados
+[367/950] Refs:  1 | Tokens: 612 | Gasto: $0.0269 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[368/950] Refs:  1 | Tokens: 504 | Gasto: $0.0269 | 0 achados
+[369/950] Refs:  1 | Tokens: 533 | Gasto: $0.0270 | 0 achados
+[370/950] Refs:  1 | Tokens: 518 | Gasto: $0.0271 | 0 achados
+[371/950] Refs:  1 | Tokens: 491 | Gasto: $0.0271 | 0 achados
+[372/950] Refs:  1 | Tokens: 498 | Gasto: $0.0272 | 0 achados
+[373/950] Refs:  1 | Tokens: 496 | Gasto: $0.0273 | 0 achados
+[374/950] Refs:  1 | Tokens: 506 | Gasto: $0.0274 | 0 achados
+[375/950] Refs:  2 | Tokens: 518 | Gasto: $0.0274 | 0 achados
+[376/950] Refs:  2 | Tokens: 486 | Gasto: $0.0275 | 0 achados
+[377/950] Refs:  1 | Tokens: 542 | Gasto: $0.0276 | 1 achado(s): PRONTO_SOCORRO
+[378/950] Refs:  1 | Tokens: 494 | Gasto: $0.0276 | 0 achados
+[379/950] Refs:  2 | Tokens: 525 | Gasto: $0.0277 | 0 achados
+[380/950] Refs:  1 | Tokens: 524 | Gasto: $0.0278 | 0 achados
+[381/950] Refs:  1 | Tokens: 512 | Gasto: $0.0279 | 0 achados
+[382/950] Refs:  1 | Tokens: 523 | Gasto: $0.0279 | 1 achado(s): BIOPSIA_POSITIVA
+[383/950] Refs:  1 | Tokens: 534 | Gasto: $0.0280 | 1 achado(s): BIOPSIA_POSITIVA
+[384/950] Refs:  1 | Tokens: 496 | Gasto: $0.0281 | 0 achados
+[385/950] Refs:  2 | Tokens: 505 | Gasto: $0.0282 | 0 achados
+[386/950] Refs:  3 | Tokens: 505 | Gasto: $0.0282 | 0 achados
+[387/950] Refs:  2 | Tokens: 508 | Gasto: $0.0283 | 0 achados
+[388/950] Refs:  1 | Tokens: 507 | Gasto: $0.0284 | 0 achados
+[389/950] Refs:  1 | Tokens: 494 | Gasto: $0.0284 | 0 achados
+[390/950] Refs:  1 | Tokens: 548 | Gasto: $0.0285 | 1 achado(s): BIOPSIA_POSITIVA
+[391/950] Refs:  1 | Tokens: 544 | Gasto: $0.0286 | 1 achado(s): BIOPSIA_POSITIVA
+[392/950] Refs:  1 | Tokens: 499 | Gasto: $0.0287 | 0 achados
+[393/950] Refs:  1 | Tokens: 573 | Gasto: $0.0288 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[394/950] Refs:  1 | Tokens: 548 | Gasto: $0.0289 | 1 achado(s): PRONTO_SOCORRO
+[395/950] Refs:  1 | Tokens: 568 | Gasto: $0.0289 | 1 achado(s): INTERNACAO
+[396/950] Refs:  2 | Tokens: 487 | Gasto: $0.0290 | 0 achados
+[397/950] Refs:  2 | Tokens: 487 | Gasto: $0.0291 | 0 achados
+[398/950] Refs:  2 | Tokens: 479 | Gasto: $0.0291 | 0 achados
+[399/950] Refs:  1 | Tokens: 490 | Gasto: $0.0292 | 0 achados
+[400/950] Refs:  3 | Tokens: 493 | Gasto: $0.0293 | 0 achados
+[401/950] Refs:  1 | Tokens: 494 | Gasto: $0.0293 | 0 achados
+[402/950] Refs:  1 | Tokens: 495 | Gasto: $0.0294 | 0 achados
+[403/950] Refs:  1 | Tokens: 609 | Gasto: $0.0295 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[404/950] Refs:  2 | Tokens: 485 | Gasto: $0.0296 | 0 achados
+[405/950] Refs:  2 | Tokens: 602 | Gasto: $0.0297 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[406/950] Refs:  1 | Tokens: 491 | Gasto: $0.0297 | 0 achados
+[407/950] Refs:  1 | Tokens: 502 | Gasto: $0.0298 | 0 achados
+[408/950] Refs:  1 | Tokens: 488 | Gasto: $0.0299 | 0 achados
+[409/950] Refs:  1 | Tokens: 497 | Gasto: $0.0300 | 0 achados
+[410/950] Refs:  1 | Tokens: 505 | Gasto: $0.0300 | 0 achados
+[411/950] Refs:  1 | Tokens: 494 | Gasto: $0.0301 | 0 achados
+[412/950] Refs:  1 | Tokens: 506 | Gasto: $0.0302 | 0 achados
+[413/950] Refs:  1 | Tokens: 545 | Gasto: $0.0302 | 1 achado(s): SINAL_ALARME
+[414/950] Refs:  1 | Tokens: 556 | Gasto: $0.0303 | 1 achado(s): PRONTO_SOCORRO
+[415/950] Refs:  1 | Tokens: 491 | Gasto: $0.0304 | 0 achados
+[416/950] Refs:  1 | Tokens: 487 | Gasto: $0.0305 | 0 achados
+[417/950] Refs:  1 | Tokens: 500 | Gasto: $0.0305 | 0 achados
+[418/950] Refs:  2 | Tokens: 497 | Gasto: $0.0306 | 0 achados
+[419/950] Refs:  1 | Tokens: 552 | Gasto: $0.0307 | 1 achado(s): SINAL_ALARME
+[420/950] Refs:  1 | Tokens: 546 | Gasto: $0.0308 | 1 achado(s): PRONTO_SOCORRO
+[421/950] Refs:  1 | Tokens: 549 | Gasto: $0.0309 | 1 achado(s): BIOPSIA_POSITIVA
+[422/950] Refs:  1 | Tokens: 537 | Gasto: $0.0309 | 1 achado(s): BIOPSIA_POSITIVA
+[423/950] Refs:  1 | Tokens: 573 | Gasto: $0.0310 | 1 achado(s): INTERNACAO
+[424/950] Refs:  1 | Tokens: 500 | Gasto: $0.0311 | 0 achados
+[425/950] Refs:  1 | Tokens: 491 | Gasto: $0.0312 | 0 achados
+[426/950] Refs:  1 | Tokens: 535 | Gasto: $0.0312 | 1 achado(s): BIOPSIA_POSITIVA
+[427/950] Refs:  1 | Tokens: 513 | Gasto: $0.0313 | 0 achados
+[428/950] Refs:  1 | Tokens: 508 | Gasto: $0.0314 | 0 achados
+[429/950] Refs:  1 | Tokens: 484 | Gasto: $0.0315 | 0 achados
+[430/950] Refs:  1 | Tokens: 550 | Gasto: $0.0315 | 1 achado(s): PIORA_RELATADA
+[431/950] Refs:  1 | Tokens: 605 | Gasto: $0.0316 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[432/950] Refs:  1 | Tokens: 492 | Gasto: $0.0317 | 0 achados
+[433/950] Refs:  1 | Tokens: 507 | Gasto: $0.0318 | 0 achados
+[434/950] Refs:  1 | Tokens: 534 | Gasto: $0.0319 | 1 achado(s): BIOPSIA_POSITIVA
+[435/950] Refs:  1 | Tokens: 498 | Gasto: $0.0319 | 0 achados
+[436/950] Refs:  1 | Tokens: 506 | Gasto: $0.0320 | 0 achados
+[437/950] Refs:  1 | Tokens: 540 | Gasto: $0.0321 | 1 achado(s): BIOPSIA_POSITIVA
+[438/950] Refs:  1 | Tokens: 487 | Gasto: $0.0321 | 0 achados
+[439/950] Refs:  1 | Tokens: 506 | Gasto: $0.0322 | 0 achados
+[440/950] Refs:  1 | Tokens: 517 | Gasto: $0.0323 | 0 achados
+[441/950] Refs:  1 | Tokens: 482 | Gasto: $0.0324 | 0 achados
+[442/950] Refs:  1 | Tokens: 489 | Gasto: $0.0324 | 0 achados
+[443/950] Refs:  1 | Tokens: 510 | Gasto: $0.0325 | 0 achados
+[444/950] Refs:  1 | Tokens: 501 | Gasto: $0.0326 | 0 achados
+[445/950] Refs:  1 | Tokens: 477 | Gasto: $0.0326 | 0 achados
+[446/950] Refs:  1 | Tokens: 507 | Gasto: $0.0327 | 0 achados
+[447/950] Refs:  1 | Tokens: 499 | Gasto: $0.0328 | 0 achados
+[448/950] Refs:  1 | Tokens: 522 | Gasto: $0.0328 | 0 achados
+[449/950] Refs:  1 | Tokens: 503 | Gasto: $0.0329 | 0 achados
+[450/950] Refs:  1 | Tokens: 501 | Gasto: $0.0330 | 0 achados
+[451/950] Refs:  1 | Tokens: 503 | Gasto: $0.0331 | 0 achados
+[452/950] Refs:  1 | Tokens: 492 | Gasto: $0.0331 | 0 achados
+[453/950] Refs:  1 | Tokens: 544 | Gasto: $0.0332 | 1 achado(s): BIOPSIA_POSITIVA
+[454/950] Refs:  1 | Tokens: 542 | Gasto: $0.0333 | 1 achado(s): BIOPSIA_POSITIVA
+[455/950] Refs:  1 | Tokens: 490 | Gasto: $0.0334 | 0 achados
+[456/950] Refs:  1 | Tokens: 494 | Gasto: $0.0334 | 0 achados
+[457/950] Refs:  1 | Tokens: 543 | Gasto: $0.0335 | 1 achado(s): BIOPSIA_POSITIVA
+[458/950] Refs:  1 | Tokens: 571 | Gasto: $0.0336 | 1 achado(s): SINAL_ALARME
+[459/950] Refs:  1 | Tokens: 514 | Gasto: $0.0337 | 0 achados
+[460/950] Refs:  1 | Tokens: 542 | Gasto: $0.0338 | 1 achado(s): BIOPSIA_POSITIVA
+[461/950] Refs:  1 | Tokens: 636 | Gasto: $0.0339 | 3 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME, SINAL_ALARME
+[462/950] Refs:  1 | Tokens: 503 | Gasto: $0.0339 | 0 achados
+[463/950] Refs:  1 | Tokens: 482 | Gasto: $0.0340 | 0 achados
+[464/950] Refs:  1 | Tokens: 501 | Gasto: $0.0341 | 0 achados
+[465/950] Refs:  1 | Tokens: 525 | Gasto: $0.0341 | 1 achado(s): BIOPSIA_POSITIVA
+[466/950] Refs:  1 | Tokens: 490 | Gasto: $0.0342 | 0 achados
+[467/950] Refs:  1 | Tokens: 488 | Gasto: $0.0343 | 0 achados
+[468/950] Refs:  1 | Tokens: 493 | Gasto: $0.0344 | 0 achados
+[469/950] Refs:  1 | Tokens: 503 | Gasto: $0.0344 | 0 achados
+[470/950] Refs:  1 | Tokens: 605 | Gasto: $0.0345 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[471/950] Refs:  1 | Tokens: 500 | Gasto: $0.0346 | 0 achados
+[472/950] Refs:  1 | Tokens: 505 | Gasto: $0.0347 | 0 achados
+[473/950] Refs:  1 | Tokens: 499 | Gasto: $0.0347 | 0 achados
+[474/950] Refs:  1 | Tokens: 501 | Gasto: $0.0348 | 0 achados
+[475/950] Refs:  1 | Tokens: 575 | Gasto: $0.0349 | 1 achado(s): SINAL_ALARME
+[476/950] Refs:  1 | Tokens: 483 | Gasto: $0.0350 | 0 achados
+[477/950] Refs:  1 | Tokens: 533 | Gasto: $0.0350 | 1 achado(s): PROGRESSAO_IMAGEM
+[478/950] Refs:  1 | Tokens: 512 | Gasto: $0.0351 | 0 achados
+[479/950] Refs:  1 | Tokens: 498 | Gasto: $0.0352 | 0 achados
+[480/950] Refs:  1 | Tokens: 498 | Gasto: $0.0352 | 0 achados
+[481/950] Refs:  1 | Tokens: 500 | Gasto: $0.0353 | 0 achados
+[482/950] Refs:  1 | Tokens: 646 | Gasto: $0.0354 | 3 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME, SINAL_ALARME
+[483/950] Refs:  1 | Tokens: 494 | Gasto: $0.0355 | 0 achados
+[484/950] Refs:  1 | Tokens: 507 | Gasto: $0.0356 | 0 achados
+[485/950] Refs:  1 | Tokens: 504 | Gasto: $0.0356 | 0 achados
+[486/950] Refs:  1 | Tokens: 523 | Gasto: $0.0357 | 0 achados
+[487/950] Refs:  1 | Tokens: 507 | Gasto: $0.0358 | 0 achados
+[488/950] Refs:  1 | Tokens: 543 | Gasto: $0.0359 | 1 achado(s): BIOPSIA_POSITIVA
+[489/950] Refs:  1 | Tokens: 508 | Gasto: $0.0359 | 0 achados
+[490/950] Refs:  1 | Tokens: 492 | Gasto: $0.0360 | 0 achados
+[491/950] Refs:  1 | Tokens: 506 | Gasto: $0.0361 | 0 achados
+[492/950] Refs:  1 | Tokens: 504 | Gasto: $0.0361 | 0 achados
+[493/950] Refs:  1 | Tokens: 497 | Gasto: $0.0362 | 0 achados
+[494/950] Refs:  2 | Tokens: 507 | Gasto: $0.0363 | 0 achados
+[495/950] Refs:  2 | Tokens: 489 | Gasto: $0.0364 | 0 achados
+[496/950] Refs:  1 | Tokens: 494 | Gasto: $0.0364 | 0 achados
+[497/950] Refs:  2 | Tokens: 496 | Gasto: $0.0365 | 0 achados
+[498/950] Refs:  1 | Tokens: 497 | Gasto: $0.0366 | 0 achados
+[499/950] Refs:  1 | Tokens: 525 | Gasto: $0.0366 | 1 achado(s): BIOPSIA_POSITIVA
+[500/950] Refs:  1 | Tokens: 497 | Gasto: $0.0367 | 0 achados
+[501/950] Refs:  1 | Tokens: 513 | Gasto: $0.0368 | 0 achados
+[502/950] Refs:  1 | Tokens: 495 | Gasto: $0.0368 | 0 achados
+[503/950] Refs:  1 | Tokens: 498 | Gasto: $0.0369 | 0 achados
+[504/950] Refs:  1 | Tokens: 552 | Gasto: $0.0370 | 1 achado(s): SINAL_ALARME
+[505/950] Refs:  1 | Tokens: 503 | Gasto: $0.0371 | 0 achados
+[506/950] Refs:  1 | Tokens: 502 | Gasto: $0.0371 | 0 achados
+[507/950] Refs:  1 | Tokens: 508 | Gasto: $0.0372 | 0 achados
+[508/950] Refs:  1 | Tokens: 520 | Gasto: $0.0373 | 0 achados
+[509/950] Refs:  1 | Tokens: 512 | Gasto: $0.0374 | 0 achados
+[510/950] Refs:  1 | Tokens: 551 | Gasto: $0.0374 | 1 achado(s): SINAL_ALARME
+[511/950] Refs:  1 | Tokens: 498 | Gasto: $0.0375 | 0 achados
+[512/950] Refs:  2 | Tokens: 506 | Gasto: $0.0376 | 0 achados
+[513/950] Refs:  1 | Tokens: 524 | Gasto: $0.0377 | 0 achados
+[514/950] Refs:  1 | Tokens: 510 | Gasto: $0.0377 | 0 achados
+[515/950] Refs:  1 | Tokens: 506 | Gasto: $0.0378 | 0 achados
+[516/950] Refs:  1 | Tokens: 508 | Gasto: $0.0379 | 0 achados
+[517/950] Refs:  1 | Tokens: 513 | Gasto: $0.0379 | 0 achados
+[518/950] Refs:  1 | Tokens: 496 | Gasto: $0.0380 | 0 achados
+[519/950] Refs:  1 | Tokens: 505 | Gasto: $0.0381 | 0 achados
+[520/950] Refs:  1 | Tokens: 540 | Gasto: $0.0382 | 1 achado(s): BIOPSIA_POSITIVA
+[521/950] Refs:  1 | Tokens: 554 | Gasto: $0.0382 | 1 achado(s): BIOPSIA_POSITIVA
+[522/950] Refs:  1 | Tokens: 488 | Gasto: $0.0383 | 0 achados
+[523/950] Refs:  1 | Tokens: 621 | Gasto: $0.0384 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[524/950] Refs:  1 | Tokens: 507 | Gasto: $0.0385 | 0 achados
+[525/950] Refs:  1 | Tokens: 506 | Gasto: $0.0386 | 0 achados
+[526/950] Refs:  1 | Tokens: 529 | Gasto: $0.0386 | 0 achados
+[527/950] Refs:  1 | Tokens: 501 | Gasto: $0.0387 | 0 achados
+[528/950] Refs:  1 | Tokens: 484 | Gasto: $0.0388 | 0 achados
+[529/950] Refs:  1 | Tokens: 538 | Gasto: $0.0389 | 1 achado(s): BIOPSIA_POSITIVA
+[530/950] Refs:  1 | Tokens: 494 | Gasto: $0.0389 | 0 achados
+[531/950] Refs:  1 | Tokens: 544 | Gasto: $0.0390 | 1 achado(s): BIOPSIA_POSITIVA
+[532/950] Refs:  2 | Tokens: 497 | Gasto: $0.0391 | 0 achados
+[533/950] Refs:  1 | Tokens: 536 | Gasto: $0.0392 | 1 achado(s): BIOPSIA_POSITIVA
+[534/950] Refs:  1 | Tokens: 505 | Gasto: $0.0392 | 0 achados
+[535/950] Refs:  3 | Tokens: 493 | Gasto: $0.0393 | 0 achados
+[536/950] Refs:  1 | Tokens: 514 | Gasto: $0.0394 | 0 achados
+[537/950] Refs:  1 | Tokens: 502 | Gasto: $0.0394 | 0 achados
+[538/950] Refs:  1 | Tokens: 503 | Gasto: $0.0395 | 0 achados
+[539/950] Refs:  1 | Tokens: 497 | Gasto: $0.0396 | 0 achados
+[540/950] Refs:  1 | Tokens: 562 | Gasto: $0.0397 | 1 achado(s): HBA1C_DESCONTROLADA
+[541/950] Refs:  1 | Tokens: 523 | Gasto: $0.0397 | 0 achados
+[542/950] Refs:  1 | Tokens: 501 | Gasto: $0.0398 | 0 achados
+[543/950] Refs:  1 | Tokens: 542 | Gasto: $0.0399 | 1 achado(s): BIOPSIA_POSITIVA
+[544/950] Refs:  1 | Tokens: 505 | Gasto: $0.0400 | 0 achados
+[545/950] Refs:  1 | Tokens: 516 | Gasto: $0.0400 | 0 achados
+[546/950] Refs:  1 | Tokens: 499 | Gasto: $0.0401 | 0 achados
+[547/950] Refs:  1 | Tokens: 500 | Gasto: $0.0402 | 0 achados
+[548/950] Refs:  1 | Tokens: 603 | Gasto: $0.0403 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[549/950] Refs:  1 | Tokens: 526 | Gasto: $0.0403 | 0 achados
+[550/950] Refs:  1 | Tokens: 508 | Gasto: $0.0404 | 0 achados
+[551/950] Refs:  1 | Tokens: 535 | Gasto: $0.0405 | 1 achado(s): BIOPSIA_POSITIVA
+[552/950] Refs:  1 | Tokens: 514 | Gasto: $0.0406 | 0 achados
+[553/950] Refs:  1 | Tokens: 483 | Gasto: $0.0406 | 0 achados
+[554/950] Refs:  1 | Tokens: 553 | Gasto: $0.0407 | 1 achado(s): HBA1C_DESCONTROLADA
+[555/950] Refs:  1 | Tokens: 498 | Gasto: $0.0408 | 0 achados
+[556/950] Refs:  1 | Tokens: 532 | Gasto: $0.0409 | 1 achado(s): BIOPSIA_POSITIVA
+[557/950] Refs:  1 | Tokens: 486 | Gasto: $0.0409 | 0 achados
+[558/950] Refs:  1 | Tokens: 496 | Gasto: $0.0410 | 0 achados
+[559/950] Refs:  1 | Tokens: 537 | Gasto: $0.0411 | 1 achado(s): BIOPSIA_POSITIVA
+[560/950] Refs:  1 | Tokens: 609 | Gasto: $0.0412 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[561/950] Refs:  2 | Tokens: 485 | Gasto: $0.0412 | 0 achados
+[562/950] Refs:  1 | Tokens: 499 | Gasto: $0.0413 | 0 achados
+[563/950] Refs:  1 | Tokens: 503 | Gasto: $0.0414 | 0 achados
+[564/950] Refs:  1 | Tokens: 495 | Gasto: $0.0415 | 0 achados
+[565/950] Refs:  1 | Tokens: 499 | Gasto: $0.0415 | 0 achados
+[566/950] Refs:  1 | Tokens: 544 | Gasto: $0.0416 | 1 achado(s): BIOPSIA_POSITIVA
+[567/950] Refs:  1 | Tokens: 581 | Gasto: $0.0417 | 1 achado(s): SINAL_ALARME
+[568/950] Refs:  1 | Tokens: 494 | Gasto: $0.0418 | 0 achados
+[569/950] Refs:  1 | Tokens: 509 | Gasto: $0.0418 | 0 achados
+[570/950] Refs:  1 | Tokens: 525 | Gasto: $0.0419 | 1 achado(s): BIOPSIA_POSITIVA
+[571/950] Refs:  1 | Tokens: 492 | Gasto: $0.0420 | 0 achados
+[572/950] Refs:  1 | Tokens: 539 | Gasto: $0.0421 | 1 achado(s): BIOPSIA_POSITIVA
+[573/950] Refs:  1 | Tokens: 514 | Gasto: $0.0421 | 0 achados
+[574/950] Refs:  1 | Tokens: 499 | Gasto: $0.0422 | 0 achados
+[575/950] Refs:  1 | Tokens: 496 | Gasto: $0.0423 | 0 achados
+[576/950] Refs:  1 | Tokens: 525 | Gasto: $0.0424 | 1 achado(s): BIOPSIA_POSITIVA
+[577/950] Refs:  1 | Tokens: 545 | Gasto: $0.0424 | 1 achado(s): BIOPSIA_POSITIVA
+[578/950] Refs:  1 | Tokens: 503 | Gasto: $0.0425 | 0 achados
+[579/950] Refs:  1 | Tokens: 512 | Gasto: $0.0426 | 0 achados
+[580/950] Refs:  1 | Tokens: 516 | Gasto: $0.0427 | 0 achados
+[581/950] Refs:  1 | Tokens: 488 | Gasto: $0.0427 | 0 achados
+[582/950] Refs:  1 | Tokens: 502 | Gasto: $0.0428 | 0 achados
+[583/950] Refs:  1 | Tokens: 495 | Gasto: $0.0429 | 0 achados
+[584/950] Refs:  1 | Tokens: 536 | Gasto: $0.0429 | 1 achado(s): BIOPSIA_POSITIVA
+[585/950] Refs:  1 | Tokens: 512 | Gasto: $0.0430 | 0 achados
+[586/950] Refs:  1 | Tokens: 517 | Gasto: $0.0431 | 0 achados
+[587/950] Refs:  1 | Tokens: 486 | Gasto: $0.0432 | 0 achados
+[588/950] Refs:  1 | Tokens: 501 | Gasto: $0.0432 | 0 achados
+[589/950] Refs:  1 | Tokens: 547 | Gasto: $0.0433 | 1 achado(s): SINAL_ALARME
+[590/950] Refs:  1 | Tokens: 508 | Gasto: $0.0434 | 0 achados
+[591/950] Refs:  1 | Tokens: 500 | Gasto: $0.0434 | 0 achados
+[592/950] Refs:  1 | Tokens: 541 | Gasto: $0.0435 | 0 achados
+[593/950] Refs:  1 | Tokens: 514 | Gasto: $0.0436 | 0 achados
+[594/950] Refs:  1 | Tokens: 485 | Gasto: $0.0437 | 0 achados
+[595/950] Refs:  1 | Tokens: 517 | Gasto: $0.0437 | 0 achados
+[596/950] Refs:  1 | Tokens: 503 | Gasto: $0.0438 | 0 achados
+[597/950] Refs:  1 | Tokens: 538 | Gasto: $0.0439 | 1 achado(s): BIOPSIA_POSITIVA
+[598/950] Refs:  1 | Tokens: 495 | Gasto: $0.0440 | 0 achados
+[599/950] Refs:  1 | Tokens: 537 | Gasto: $0.0440 | 1 achado(s): PRONTO_SOCORRO
+[600/950] Refs:  1 | Tokens: 503 | Gasto: $0.0441 | 0 achados
+[601/950] Refs:  1 | Tokens: 568 | Gasto: $0.0442 | 1 achado(s): SINAL_ALARME
+[602/950] Refs:  1 | Tokens: 500 | Gasto: $0.0443 | 0 achados
+[603/950] Refs:  1 | Tokens: 516 | Gasto: $0.0443 | 0 achados
+[604/950] Refs:  1 | Tokens: 512 | Gasto: $0.0444 | 0 achados
+[605/950] Refs:  1 | Tokens: 514 | Gasto: $0.0445 | 0 achados
+[606/950] Refs:  1 | Tokens: 512 | Gasto: $0.0446 | 0 achados
+[607/950] Refs:  1 | Tokens: 503 | Gasto: $0.0446 | 0 achados
+[608/950] Refs:  1 | Tokens: 497 | Gasto: $0.0447 | 0 achados
+[609/950] Refs:  1 | Tokens: 501 | Gasto: $0.0448 | 0 achados
+[610/950] Refs:  1 | Tokens: 532 | Gasto: $0.0448 | 1 achado(s): BIOPSIA_POSITIVA
+[611/950] Refs:  1 | Tokens: 502 | Gasto: $0.0449 | 0 achados
+[612/950] Refs:  1 | Tokens: 520 | Gasto: $0.0450 | 0 achados
+[613/950] Refs:  1 | Tokens: 515 | Gasto: $0.0451 | 0 achados
+[614/950] Refs:  1 | Tokens: 542 | Gasto: $0.0451 | 1 achado(s): BIOPSIA_POSITIVA
+[615/950] Refs:  1 | Tokens: 503 | Gasto: $0.0452 | 0 achados
+[616/950] Refs:  1 | Tokens: 488 | Gasto: $0.0453 | 0 achados
+[617/950] Refs:  1 | Tokens: 514 | Gasto: $0.0454 | 0 achados
+[618/950] Refs:  1 | Tokens: 506 | Gasto: $0.0454 | 0 achados
+[619/950] Refs:  1 | Tokens: 502 | Gasto: $0.0455 | 0 achados
+[620/950] Refs:  1 | Tokens: 501 | Gasto: $0.0456 | 0 achados
+[621/950] Refs:  1 | Tokens: 486 | Gasto: $0.0456 | 0 achados
+[622/950] Refs:  1 | Tokens: 508 | Gasto: $0.0457 | 0 achados
+[623/950] Refs:  1 | Tokens: 496 | Gasto: $0.0458 | 0 achados
+[624/950] Refs:  2 | Tokens: 542 | Gasto: $0.0459 | 1 achado(s): BIOPSIA_POSITIVA
+[625/950] Refs:  1 | Tokens: 504 | Gasto: $0.0459 | 0 achados
+[626/950] Refs:  2 | Tokens: 493 | Gasto: $0.0460 | 0 achados
+[627/950] Refs:  1 | Tokens: 507 | Gasto: $0.0461 | 0 achados
+[628/950] Refs:  1 | Tokens: 502 | Gasto: $0.0461 | 0 achados
+[629/950] Refs:  1 | Tokens: 490 | Gasto: $0.0462 | 0 achados
+[630/950] Refs:  1 | Tokens: 531 | Gasto: $0.0463 | 0 achados
+[631/950] Refs:  1 | Tokens: 496 | Gasto: $0.0463 | 0 achados
+[632/950] Refs:  1 | Tokens: 503 | Gasto: $0.0464 | 0 achados
+[633/950] Refs:  1 | Tokens: 550 | Gasto: $0.0465 | 1 achado(s): BIOPSIA_POSITIVA
+[634/950] Refs:  1 | Tokens: 492 | Gasto: $0.0466 | 0 achados
+[635/950] Refs:  1 | Tokens: 535 | Gasto: $0.0467 | 1 achado(s): BIOPSIA_POSITIVA
+[636/950] Refs:  1 | Tokens: 559 | Gasto: $0.0467 | 1 achado(s): HBA1C_DESCONTROLADA
+[637/950] Refs:  1 | Tokens: 514 | Gasto: $0.0468 | 0 achados
+[638/950] Refs:  1 | Tokens: 497 | Gasto: $0.0469 | 0 achados
+[639/950] Refs:  1 | Tokens: 546 | Gasto: $0.0470 | 1 achado(s): BIOPSIA_POSITIVA
+[640/950] Refs:  1 | Tokens: 507 | Gasto: $0.0470 | 0 achados
+[641/950] Refs:  1 | Tokens: 504 | Gasto: $0.0471 | 0 achados
+[642/950] Refs:  1 | Tokens: 500 | Gasto: $0.0472 | 0 achados
+[643/950] Refs:  1 | Tokens: 505 | Gasto: $0.0472 | 0 achados
+[644/950] Refs:  1 | Tokens: 627 | Gasto: $0.0473 | 2 achado(s): BIOPSIA_POSITIVA, SINAL_ALARME
+[645/950] Refs:  1 | Tokens: 585 | Gasto: $0.0474 | 1 achado(s): SINAL_ALARME
+[646/950] Refs:  1 | Tokens: 489 | Gasto: $0.0475 | 0 achados
+[647/950] Refs:  1 | Tokens: 533 | Gasto: $0.0476 | 0 achados
+[648/950] Refs:  1 | Tokens: 503 | Gasto: $0.0476 | 0 achados
+[649/950] Refs:  1 | Tokens: 638 | Gasto: $0.0478 | 3 achado(s): PROGRESSAO_IMAGEM, PIORA_RELATADA, SINAL_ALARME
+[650/950] Refs:  1 | Tokens: 499 | Gasto: $0.0478 | 0 achados
+[651/950] Refs:  1 | Tokens: 510 | Gasto: $0.0479 | 0 achados
+[652/950] Refs:  1 | Tokens: 491 | Gasto: $0.0480 | 0 achados
+[653/950] Refs:  1 | Tokens: 507 | Gasto: $0.0480 | 0 achados
+[654/950] Refs:  1 | Tokens: 582 | Gasto: $0.0481 | 1 achado(s): PIORA_RELATADA
+[655/950] Refs:  1 | Tokens: 512 | Gasto: $0.0482 | 0 achados
+[656/950] Refs:  1 | Tokens: 501 | Gasto: $0.0483 | 0 achados
+[657/950] Refs:  1 | Tokens: 498 | Gasto: $0.0483 | 0 achados
+[658/950] Refs:  1 | Tokens: 499 | Gasto: $0.0484 | 0 achados
+[659/950] Refs:  1 | Tokens: 503 | Gasto: $0.0485 | 0 achados
+[660/950] Refs:  1 | Tokens: 506 | Gasto: $0.0485 | 0 achados
+[661/950] Refs:  1 | Tokens: 502 | Gasto: $0.0486 | 0 achados
+[662/950] Refs:  1 | Tokens: 552 | Gasto: $0.0487 | 1 achado(s): BIOPSIA_POSITIVA
+[663/950] Refs:  2 | Tokens: 545 | Gasto: $0.0488 | 1 achado(s): PROGRESSAO_IMAGEM
+[664/950] Refs:  1 | Tokens: 510 | Gasto: $0.0489 | 0 achados
+[665/950] Refs:  1 | Tokens: 541 | Gasto: $0.0489 | 1 achado(s): BIOPSIA_POSITIVA
+[666/950] Refs:  1 | Tokens: 596 | Gasto: $0.0490 | 2 achado(s): SINAL_ALARME, SINAL_ALARME
+[667/950] Refs:  1 | Tokens: 544 | Gasto: $0.0491 | 1 achado(s): BIOPSIA_POSITIVA
+[668/950] Refs:  1 | Tokens: 530 | Gasto: $0.0492 | 1 achado(s): BIOPSIA_POSITIVA
+[669/950] Refs:  1 | Tokens: 503 | Gasto: $0.0493 | 0 achados
+[670/950] Refs:  1 | Tokens: 499 | Gasto: $0.0493 | 0 achados
+[671/950] Refs:  1 | Tokens: 507 | Gasto: $0.0494 | 0 achados
+[672/950] Refs:  1 | Tokens: 536 | Gasto: $0.0495 | 1 achado(s): PROGRESSAO_IMAGEM
+[673/950] Refs:  1 | Tokens: 494 | Gasto: $0.0496 | 0 achados
+[674/950] Refs:  1 | Tokens: 493 | Gasto: $0.0496 | 0 achados
+[675/950] Refs:  1 | Tokens: 558 | Gasto: $0.0497 | 1 achado(s): BIOPSIA_POSITIVA
+[676/950] Refs:  1 | Tokens: 499 | Gasto: $0.0498 | 0 achados
+[677/950] Refs:  1 | Tokens: 506 | Gasto: $0.0498 | 0 achados
+[678/950] Refs:  1 | Tokens: 543 | Gasto: $0.0499 | 1 achado(s): BIOPSIA_POSITIVA
+[679/950] Refs:  2 | Tokens: 483 | Gasto: $0.0500 | 0 achados
+[680/950] Refs:  1 | Tokens: 490 | Gasto: $0.0501 | 0 achados
+[681/950] Refs:  1 | Tokens: 536 | Gasto: $0.0501 | 1 achado(s): BIOPSIA_POSITIVA
+[682/950] Refs:  1 | Tokens: 548 | Gasto: $0.0502 | 1 achado(s): SINAL_ALARME
+[683/950] Refs:  1 | Tokens: 514 | Gasto: $0.0503 | 0 achados
+[684/950] Refs:  1 | Tokens: 543 | Gasto: $0.0504 | 1 achado(s): BIOPSIA_POSITIVA
+[685/950] Refs:  1 | Tokens: 489 | Gasto: $0.0504 | 0 achados
+[686/950] Refs:  1 | Tokens: 523 | Gasto: $0.0505 | 0 achados
+[687/950] Refs:  1 | Tokens: 491 | Gasto: $0.0506 | 0 achados
+[688/950] Refs:  1 | Tokens: 513 | Gasto: $0.0507 | 0 achados
+[689/950] Refs:  1 | Tokens: 503 | Gasto: $0.0507 | 0 achados
+[690/950] Refs:  1 | Tokens: 512 | Gasto: $0.0508 | 0 achados
+[691/950] Refs:  1 | Tokens: 478 | Gasto: $0.0509 | 0 achados
+[692/950] Refs:  1 | Tokens: 504 | Gasto: $0.0509 | 0 achados
+[693/950] Refs:  1 | Tokens: 544 | Gasto: $0.0510 | 1 achado(s): BIOPSIA_POSITIVA
+[694/950] Refs:  1 | Tokens: 532 | Gasto: $0.0511 | 1 achado(s): BIOPSIA_POSITIVA
+[695/950] Refs:  1 | Tokens: 517 | Gasto: $0.0512 | 0 achados
+[696/950] Refs:  1 | Tokens: 503 | Gasto: $0.0513 | 0 achados
+[697/950] Refs:  4 | Tokens: 522 | Gasto: $0.0513 | 1 achado(s): PIORA_RELATADA
+[698/950] Refs:  1 | Tokens: 546 | Gasto: $0.0514 | 1 achado(s): HBA1C_DESCONTROLADA
+[699/950] Refs: 22 | Tokens: 478 | Gasto: $0.0515 | 0 achados
+[700/950] Refs: 12 | Tokens: 508 | Gasto: $0.0516 | 1 achado(s): INTERNACAO
+[701/950] Refs:  7 | Tokens: 477 | Gasto: $0.0516 | 0 achados
+[702/950] Refs: 18 | Tokens: 486 | Gasto: $0.0517 | 0 achados
+[703/950] Refs:  1 | Tokens: 558 | Gasto: $0.0518 | 1 achado(s): SAIU_DA_FILA
+[704/950] Refs:  7 | Tokens: 480 | Gasto: $0.0518 | 0 achados
+[705/950] Refs:  3 | Tokens: 475 | Gasto: $0.0519 | 0 achados
+[706/950] Refs: 23 | Tokens: 479 | Gasto: $0.0520 | 0 achados
+[707/950] Refs: 22 | Tokens: 484 | Gasto: $0.0520 | 0 achados
+[708/950] Refs:  1 | Tokens: 486 | Gasto: $0.0521 | 0 achados
+[709/950] Refs:  3 | Tokens: 487 | Gasto: $0.0522 | 0 achados
+[710/950] Refs: 15 | Tokens: 479 | Gasto: $0.0523 | 0 achados
+[711/950] Refs: 18 | Tokens: 482 | Gasto: $0.0523 | 0 achados
+[712/950] Refs:  3 | Tokens: 522 | Gasto: $0.0524 | 1 achado(s): PRONTO_SOCORRO
+[713/950] Refs:  2 | Tokens: 478 | Gasto: $0.0525 | 0 achados
+[714/950] Refs: 13 | Tokens: 478 | Gasto: $0.0525 | 0 achados
+[715/950] Refs: 17 | Tokens: 480 | Gasto: $0.0526 | 0 achados
+[716/950] Refs:  8 | Tokens: 475 | Gasto: $0.0527 | 0 achados
+[717/950] Refs:  1 | Tokens: 474 | Gasto: $0.0527 | 0 achados
+[718/950] Refs: 12 | Tokens: 476 | Gasto: $0.0528 | 0 achados
+[719/950] Refs:  6 | Tokens: 477 | Gasto: $0.0529 | 0 achados
+[720/950] Refs:  3 | Tokens: 526 | Gasto: $0.0529 | 1 achado(s): MELHORA
+[721/950] Refs:  1 | Tokens: 538 | Gasto: $0.0530 | 1 achado(s): PERDA_CONTATO
+[722/950] Refs: 17 | Tokens: 483 | Gasto: $0.0531 | 0 achados
+[723/950] Refs: 12 | Tokens: 481 | Gasto: $0.0532 | 0 achados
+[724/950] Refs:  1 | Tokens: 486 | Gasto: $0.0532 | 0 achados
+[725/950] Refs: 18 | Tokens: 478 | Gasto: $0.0533 | 0 achados
+[726/950] Refs:  9 | Tokens: 476 | Gasto: $0.0534 | 0 achados
+[727/950] Refs:  1 | Tokens: 479 | Gasto: $0.0534 | 0 achados
+[728/950] Refs:  1 | Tokens: 546 | Gasto: $0.0535 | 1 achado(s): HBA1C_DESCONTROLADA
+[729/950] Refs:  2 | Tokens: 479 | Gasto: $0.0536 | 0 achados
+[730/950] Refs:  4 | Tokens: 479 | Gasto: $0.0536 | 0 achados
+[731/950] Refs:  4 | Tokens: 486 | Gasto: $0.0537 | 0 achados
+[732/950] Refs: 10 | Tokens: 523 | Gasto: $0.0538 | 1 achado(s): PERDA_CONTATO
+[733/950] Refs:  1 | Tokens: 487 | Gasto: $0.0539 | 0 achados
+[734/950] Refs:  2 | Tokens: 481 | Gasto: $0.0539 | 0 achados
+[735/950] Refs:  1 | Tokens: 487 | Gasto: $0.0540 | 0 achados
+[736/950] Refs:  2 | Tokens: 527 | Gasto: $0.0541 | 1 achado(s): HBA1C_DESCONTROLADA
+[737/950] Refs:  1 | Tokens: 487 | Gasto: $0.0541 | 0 achados
+[738/950] Refs:  1 | Tokens: 487 | Gasto: $0.0542 | 0 achados
+[739/950] Refs:  1 | Tokens: 477 | Gasto: $0.0543 | 0 achados
+[740/950] Refs:  2 | Tokens: 478 | Gasto: $0.0544 | 0 achados
+[741/950] Refs: 12 | Tokens: 477 | Gasto: $0.0544 | 0 achados
+[742/950] Refs:  2 | Tokens: 480 | Gasto: $0.0545 | 0 achados
+[743/950] Refs:  1 | Tokens: 481 | Gasto: $0.0546 | 0 achados
+[744/950] Refs: 16 | Tokens: 478 | Gasto: $0.0546 | 0 achados
+[745/950] Refs:  5 | Tokens: 480 | Gasto: $0.0547 | 0 achados
+[746/950] Refs:  1 | Tokens: 478 | Gasto: $0.0548 | 0 achados
+[747/950] Refs:  4 | Tokens: 477 | Gasto: $0.0548 | 0 achados
+[748/950] Refs:  1 | Tokens: 487 | Gasto: $0.0549 | 0 achados
+[749/950] Refs:  1 | Tokens: 486 | Gasto: $0.0550 | 0 achados
+[750/950] Refs:  8 | Tokens: 484 | Gasto: $0.0550 | 0 achados
+[751/950] Refs:  3 | Tokens: 485 | Gasto: $0.0551 | 0 achados
+[752/950] Refs:  1 | Tokens: 542 | Gasto: $0.0552 | 1 achado(s): REAVALIACAO_PIORA
+[753/950] Refs:  4 | Tokens: 487 | Gasto: $0.0552 | 0 achados
+[754/950] Refs:  3 | Tokens: 533 | Gasto: $0.0553 | 1 achado(s): HBA1C_DESCONTROLADA
+[755/950] Refs:  3 | Tokens: 483 | Gasto: $0.0554 | 0 achados
+[756/950] Refs:  1 | Tokens: 546 | Gasto: $0.0555 | 1 achado(s): HBA1C_DESCONTROLADA
+[757/950] Refs:  2 | Tokens: 478 | Gasto: $0.0555 | 0 achados
+[758/950] Refs:  6 | Tokens: 523 | Gasto: $0.0556 | 1 achado(s): SAIU_DA_FILA
+[759/950] Refs:  1 | Tokens: 487 | Gasto: $0.0557 | 0 achados
+[760/950] Refs:  1 | Tokens: 487 | Gasto: $0.0558 | 0 achados
+[761/950] Refs:  6 | Tokens: 479 | Gasto: $0.0558 | 0 achados
+[762/950] Refs:  1 | Tokens: 477 | Gasto: $0.0559 | 0 achados
+[763/950] Refs:  1 | Tokens: 479 | Gasto: $0.0560 | 0 achados
+[764/950] Refs:  3 | Tokens: 481 | Gasto: $0.0560 | 0 achados
+[765/950] Refs:  8 | Tokens: 511 | Gasto: $0.0561 | 1 achado(s): PERDA_CONTATO
+[766/950] Refs:  1 | Tokens: 546 | Gasto: $0.0562 | 1 achado(s): HBA1C_DESCONTROLADA
+[767/950] Refs:  1 | Tokens: 533 | Gasto: $0.0563 | 1 achado(s): HBA1C_DESCONTROLADA
+[768/950] Refs:  5 | Tokens: 483 | Gasto: $0.0563 | 0 achados
+[769/950] Refs:  2 | Tokens: 505 | Gasto: $0.0564 | 1 achado(s): INTERNACAO
+[770/950] Refs:  8 | Tokens: 513 | Gasto: $0.0565 | 1 achado(s): PIORA_RELATADA
+[771/950] Refs:  2 | Tokens: 481 | Gasto: $0.0566 | 0 achados
+[772/950] Refs:  1 | Tokens: 485 | Gasto: $0.0566 | 0 achados
+[773/950] Refs:  1 | Tokens: 486 | Gasto: $0.0567 | 0 achados
+[774/950] Refs:  4 | Tokens: 474 | Gasto: $0.0568 | 0 achados
+[775/950] Refs:  1 | Tokens: 480 | Gasto: $0.0568 | 0 achados
+[776/950] Refs:  1 | Tokens: 546 | Gasto: $0.0569 | 1 achado(s): HBA1C_DESCONTROLADA
+[777/950] Refs:  3 | Tokens: 475 | Gasto: $0.0570 | 0 achados
+[778/950] Refs:  3 | Tokens: 480 | Gasto: $0.0570 | 0 achados
+[779/950] Refs:  7 | Tokens: 486 | Gasto: $0.0571 | 0 achados
+[780/950] Refs:  2 | Tokens: 548 | Gasto: $0.0572 | 1 achado(s): HBA1C_DESCONTROLADA
+[781/950] Refs:  4 | Tokens: 481 | Gasto: $0.0573 | 0 achados
+[782/950] Refs:  1 | Tokens: 538 | Gasto: $0.0573 | 1 achado(s): PERDA_CONTATO
+[783/950] Refs:  4 | Tokens: 483 | Gasto: $0.0574 | 0 achados
+[784/950] Refs:  1 | Tokens: 546 | Gasto: $0.0575 | 1 achado(s): HBA1C_DESCONTROLADA
+[785/950] Refs:  1 | Tokens: 527 | Gasto: $0.0576 | 1 achado(s): HBA1C_DESCONTROLADA
+[786/950] Refs:  1 | Tokens: 478 | Gasto: $0.0576 | 0 achados
+[787/950] Refs:  2 | Tokens: 475 | Gasto: $0.0577 | 0 achados
+[788/950] Refs:  7 | Tokens: 519 | Gasto: $0.0578 | 1 achado(s): MELHORA
+[789/950] Refs:  1 | Tokens: 542 | Gasto: $0.0579 | 1 achado(s): REAVALIACAO_PIORA
+[790/950] Refs:  1 | Tokens: 542 | Gasto: $0.0580 | 1 achado(s): REAVALIACAO_PIORA
+[791/950] Refs:  1 | Tokens: 479 | Gasto: $0.0580 | 0 achados
+[792/950] Refs:  1 | Tokens: 486 | Gasto: $0.0581 | 0 achados
+[793/950] Refs:  1 | Tokens: 478 | Gasto: $0.0582 | 0 achados
+[794/950] Refs:  1 | Tokens: 548 | Gasto: $0.0582 | 1 achado(s): HBA1C_DESCONTROLADA
+[795/950] Refs:  1 | Tokens: 487 | Gasto: $0.0583 | 0 achados
+[796/950] Refs:  2 | Tokens: 486 | Gasto: $0.0584 | 0 achados
+[797/950] Refs:  2 | Tokens: 486 | Gasto: $0.0584 | 0 achados
+[798/950] Refs:  3 | Tokens: 476 | Gasto: $0.0585 | 0 achados
+[799/950] Refs:  1 | Tokens: 479 | Gasto: $0.0586 | 0 achados
+[800/950] Refs:  1 | Tokens: 487 | Gasto: $0.0587 | 0 achados
+[801/950] Refs:  1 | Tokens: 478 | Gasto: $0.0587 | 0 achados
+[802/950] Refs:  2 | Tokens: 564 | Gasto: $0.0588 | 2 achado(s): PIORA_RELATADA, REAVALIACAO_PIORA
+[803/950] Refs:  1 | Tokens: 486 | Gasto: $0.0589 | 0 achados
+[804/950] Refs:  1 | Tokens: 558 | Gasto: $0.0590 | 1 achado(s): SAIU_DA_FILA
+[805/950] Refs:  1 | Tokens: 487 | Gasto: $0.0590 | 0 achados
+[806/950] Refs:  1 | Tokens: 538 | Gasto: $0.0591 | 1 achado(s): PERDA_CONTATO
+[807/950] Refs:  1 | Tokens: 548 | Gasto: $0.0592 | 1 achado(s): HBA1C_DESCONTROLADA
+[808/950] Refs:  2 | Tokens: 479 | Gasto: $0.0593 | 0 achados
+[809/950] Refs:  1 | Tokens: 478 | Gasto: $0.0593 | 0 achados
+[810/950] Refs:  1 | Tokens: 478 | Gasto: $0.0594 | 0 achados
+[811/950] Refs:  1 | Tokens: 558 | Gasto: $0.0595 | 1 achado(s): SAIU_DA_FILA
+[812/950] Refs:  1 | Tokens: 486 | Gasto: $0.0596 | 0 achados
+[813/950] Refs:  1 | Tokens: 548 | Gasto: $0.0596 | 1 achado(s): HBA1C_DESCONTROLADA
+[814/950] Refs:  1 | Tokens: 478 | Gasto: $0.0597 | 0 achados
+[815/950] Refs:  1 | Tokens: 538 | Gasto: $0.0598 | 1 achado(s): PERDA_CONTATO
+[816/950] Refs:  1 | Tokens: 479 | Gasto: $0.0599 | 0 achados
+[817/950] Refs:  5 | Tokens: 522 | Gasto: $0.0599 | 1 achado(s): PRONTO_SOCORRO
+[818/950] Refs:  1 | Tokens: 548 | Gasto: $0.0600 | 1 achado(s): HBA1C_DESCONTROLADA
+[819/950] Refs:  1 | Tokens: 538 | Gasto: $0.0601 | 1 achado(s): PERDA_CONTATO
+[820/950] Refs:  1 | Tokens: 478 | Gasto: $0.0602 | 0 achados
+[821/950] Refs:  3 | Tokens: 479 | Gasto: $0.0602 | 0 achados
+[822/950] Refs:  1 | Tokens: 538 | Gasto: $0.0603 | 1 achado(s): PERDA_CONTATO
+[823/950] Refs:  1 | Tokens: 538 | Gasto: $0.0604 | 1 achado(s): PERDA_CONTATO
+[824/950] Refs:  1 | Tokens: 478 | Gasto: $0.0605 | 0 achados
+[825/950] Refs:  1 | Tokens: 548 | Gasto: $0.0606 | 1 achado(s): HBA1C_DESCONTROLADA
+[826/950] Refs:  1 | Tokens: 546 | Gasto: $0.0606 | 1 achado(s): HBA1C_DESCONTROLADA
+[827/950] Refs:  1 | Tokens: 533 | Gasto: $0.0607 | 1 achado(s): HBA1C_DESCONTROLADA
+[828/950] Refs:  1 | Tokens: 486 | Gasto: $0.0608 | 0 achados
+[829/950] Refs:  1 | Tokens: 538 | Gasto: $0.0609 | 1 achado(s): PERDA_CONTATO
+[830/950] Refs:  1 | Tokens: 476 | Gasto: $0.0609 | 0 achados
+[831/950] Refs:  1 | Tokens: 497 | Gasto: $0.0610 | 0 achados
+[832/950] Refs:  1 | Tokens: 479 | Gasto: $0.0611 | 0 achados
+[833/950] Refs:  1 | Tokens: 497 | Gasto: $0.0611 | 0 achados
+[834/950] Refs:  1 | Tokens: 538 | Gasto: $0.0612 | 1 achado(s): PERDA_CONTATO
+[835/950] Refs:  1 | Tokens: 479 | Gasto: $0.0613 | 0 achados
+[836/950] Refs:  1 | Tokens: 487 | Gasto: $0.0614 | 0 achados
+[837/950] Refs:  1 | Tokens: 548 | Gasto: $0.0614 | 1 achado(s): HBA1C_DESCONTROLADA
+[838/950] Refs:  1 | Tokens: 478 | Gasto: $0.0615 | 0 achados
+[839/950] Refs:  1 | Tokens: 546 | Gasto: $0.0616 | 1 achado(s): HBA1C_DESCONTROLADA
+[840/950] Refs:  1 | Tokens: 538 | Gasto: $0.0617 | 1 achado(s): PERDA_CONTATO
+[841/950] Refs:  1 | Tokens: 486 | Gasto: $0.0617 | 0 achados
+[842/950] Refs:  1 | Tokens: 486 | Gasto: $0.0618 | 0 achados
+[843/950] Refs:  1 | Tokens: 487 | Gasto: $0.0619 | 0 achados
+[844/950] Refs:  1 | Tokens: 479 | Gasto: $0.0619 | 0 achados
+[845/950] Refs:  1 | Tokens: 479 | Gasto: $0.0620 | 0 achados
+[846/950] Refs:  1 | Tokens: 475 | Gasto: $0.0621 | 0 achados
+[847/950] Refs:  1 | Tokens: 478 | Gasto: $0.0622 | 0 achados
+[848/950] Refs:  1 | Tokens: 486 | Gasto: $0.0622 | 0 achados
+[849/950] Refs:  1 | Tokens: 546 | Gasto: $0.0623 | 1 achado(s): HBA1C_DESCONTROLADA
+[850/950] Refs: 166 | Tokens: 473 | Gasto: $0.0624 | 0 achados
+[851/950] Refs: 150 | Tokens: 483 | Gasto: $0.0624 | 0 achados
+[852/950] Refs:  3 | Tokens: 484 | Gasto: $0.0625 | 0 achados
+[853/950] Refs: 18 | Tokens: 520 | Gasto: $0.0626 | 1 achado(s): BIOPSIA_POSITIVA
+[854/950] Refs: 67 | Tokens: 475 | Gasto: $0.0627 | 0 achados
+[855/950] Refs:  3 | Tokens: 478 | Gasto: $0.0627 | 0 achados
+[856/950] Refs: 19 | Tokens: 516 | Gasto: $0.0628 | 1 achado(s): MELHORA
+[857/950] Refs: 27 | Tokens: 472 | Gasto: $0.0629 | 0 achados
+[858/950] Refs:  6 | Tokens: 490 | Gasto: $0.0629 | 0 achados
+[859/950] Refs:  3 | Tokens: 474 | Gasto: $0.0630 | 0 achados
+[860/950] Refs: 28 | Tokens: 473 | Gasto: $0.0631 | 0 achados
+[861/950] Refs: 15 | Tokens: 479 | Gasto: $0.0631 | 0 achados
+[862/950] Refs: 19 | Tokens: 518 | Gasto: $0.0632 | 1 achado(s): PIORA_RELATADA
+[863/950] Refs: 28 | Tokens: 478 | Gasto: $0.0633 | 0 achados
+[864/950] Refs: 24 | Tokens: 518 | Gasto: $0.0634 | 1 achado(s): BIOPSIA_POSITIVA
+[865/950] Refs:  1 | Tokens: 520 | Gasto: $0.0634 | 1 achado(s): INTERNACAO
+[866/950] Refs: 25 | Tokens: 471 | Gasto: $0.0635 | 0 achados
+[867/950] Refs:  1 | Tokens: 526 | Gasto: $0.0636 | 1 achado(s): INTERNACAO
+[868/950] Refs: 12 | Tokens: 530 | Gasto: $0.0637 | 1 achado(s): BIOPSIA_POSITIVA
+[869/950] Refs: 25 | Tokens: 473 | Gasto: $0.0637 | 0 achados
+[870/950] Refs:  6 | Tokens: 528 | Gasto: $0.0638 | 1 achado(s): PRONTO_SOCORRO
+[871/950] Refs:  2 | Tokens: 526 | Gasto: $0.0639 | 1 achado(s): INTERNACAO
+[872/950] Refs: 20 | Tokens: 477 | Gasto: $0.0639 | 0 achados
+[873/950] Refs:  2 | Tokens: 486 | Gasto: $0.0640 | 0 achados
+[874/950] Refs: 16 | Tokens: 516 | Gasto: $0.0641 | 1 achado(s): BIOPSIA_POSITIVA
+[875/950] Refs:  1 | Tokens: 479 | Gasto: $0.0642 | 0 achados
+[876/950] Refs:  1 | Tokens: 532 | Gasto: $0.0642 | 1 achado(s): INTERNACAO
+[877/950] Refs: 18 | Tokens: 475 | Gasto: $0.0643 | 0 achados
+[878/950] Refs:  3 | Tokens: 485 | Gasto: $0.0644 | 0 achados
+[879/950] Refs: 18 | Tokens: 475 | Gasto: $0.0644 | 0 achados
+[880/950] Refs: 16 | Tokens: 474 | Gasto: $0.0645 | 0 achados
+[881/950] Refs:  4 | Tokens: 483 | Gasto: $0.0646 | 0 achados
+[882/950] Refs:  2 | Tokens: 487 | Gasto: $0.0646 | 0 achados
+[883/950] Refs: 41 | Tokens: 482 | Gasto: $0.0647 | 0 achados
+[884/950] Refs:  5 | Tokens: 481 | Gasto: $0.0648 | 0 achados
+[885/950] Refs: 13 | Tokens: 481 | Gasto: $0.0648 | 0 achados
+[886/950] Refs: 12 | Tokens: 513 | Gasto: $0.0649 | 1 achado(s): PRONTO_SOCORRO
+[887/950] Refs: 18 | Tokens: 511 | Gasto: $0.0650 | 1 achado(s): PRONTO_SOCORRO
+[888/950] Refs:  4 | Tokens: 512 | Gasto: $0.0651 | 1 achado(s): PRONTO_SOCORRO
+[889/950] Refs: 27 | Tokens: 512 | Gasto: $0.0652 | 1 achado(s): PRONTO_SOCORRO
+[890/950] Refs: 10 | Tokens: 511 | Gasto: $0.0652 | 1 achado(s): PRONTO_SOCORRO
+[891/950] Refs:  8 | Tokens: 516 | Gasto: $0.0653 | 1 achado(s): PRONTO_SOCORRO
+[892/950] Refs:  9 | Tokens: 514 | Gasto: $0.0654 | 1 achado(s): PRONTO_SOCORRO
+[893/950] Refs: 12 | Tokens: 510 | Gasto: $0.0655 | 1 achado(s): PRONTO_SOCORRO
+[894/950] Refs:  4 | Tokens: 511 | Gasto: $0.0655 | 1 achado(s): PRONTO_SOCORRO
+[895/950] Refs:  2 | Tokens: 508 | Gasto: $0.0656 | 1 achado(s): PRONTO_SOCORRO
+[896/950] Refs:  8 | Tokens: 512 | Gasto: $0.0657 | 1 achado(s): PRONTO_SOCORRO
+[897/950] Refs:  5 | Tokens: 512 | Gasto: $0.0658 | 1 achado(s): PRONTO_SOCORRO
+[898/950] Refs: 14 | Tokens: 514 | Gasto: $0.0658 | 1 achado(s): PRONTO_SOCORRO
+[899/950] Refs:  4 | Tokens: 511 | Gasto: $0.0659 | 1 achado(s): PRONTO_SOCORRO
+[900/950] Refs:  2 | Tokens: 516 | Gasto: $0.0660 | 1 achado(s): PRONTO_SOCORRO
+[901/950] Refs:  4 | Tokens: 515 | Gasto: $0.0661 | 1 achado(s): PRONTO_SOCORRO
+[902/950] Refs: 17 | Tokens: 471 | Gasto: $0.0661 | 0 achados
+[903/950] Refs:  2 | Tokens: 511 | Gasto: $0.0662 | 1 achado(s): PRONTO_SOCORRO
+[904/950] Refs: 13 | Tokens: 522 | Gasto: $0.0663 | 1 achado(s): PIORA_RELATADA
+[905/950] Refs: 11 | Tokens: 511 | Gasto: $0.0664 | 1 achado(s): PRONTO_SOCORRO
+[906/950] Refs:  9 | Tokens: 512 | Gasto: $0.0664 | 1 achado(s): PRONTO_SOCORRO
+[907/950] Refs:  1 | Tokens: 512 | Gasto: $0.0665 | 1 achado(s): INTERNACAO
+[908/950] Refs:  5 | Tokens: 524 | Gasto: $0.0666 | 1 achado(s): PROGRESSAO_IMAGEM
+[909/950] Refs:  3 | Tokens: 511 | Gasto: $0.0667 | 1 achado(s): PRONTO_SOCORRO
+[910/950] Refs: 24 | Tokens: 520 | Gasto: $0.0668 | 1 achado(s): PIORA_RELATADA
+[911/950] Refs:  1 | Tokens: 511 | Gasto: $0.0668 | 1 achado(s): INTERNACAO
+[912/950] Refs:  3 | Tokens: 520 | Gasto: $0.0669 | 1 achado(s): INTERNACAO
+[913/950] Refs: 10 | Tokens: 521 | Gasto: $0.0670 | 1 achado(s): PROGRESSAO_IMAGEM
+[914/950] Refs:  1 | Tokens: 520 | Gasto: $0.0671 | 1 achado(s): INTERNACAO
+[915/950] Refs:  2 | Tokens: 522 | Gasto: $0.0671 | 1 achado(s): INTERNACAO
+[916/950] Refs:  2 | Tokens: 511 | Gasto: $0.0672 | 1 achado(s): INTERNACAO
+[917/950] Refs:  1 | Tokens: 520 | Gasto: $0.0673 | 1 achado(s): INTERNACAO
+[918/950] Refs:  1 | Tokens: 528 | Gasto: $0.0674 | 1 achado(s): INTERNACAO
+[919/950] Refs:  1 | Tokens: 526 | Gasto: $0.0675 | 1 achado(s): INTERNACAO
+[920/950] Refs:  1 | Tokens: 526 | Gasto: $0.0675 | 1 achado(s): INTERNACAO
+[921/950] Refs: 23 | Tokens: 481 | Gasto: $0.0676 | 0 achados
+[922/950] Refs:  2 | Tokens: 518 | Gasto: $0.0677 | 1 achado(s): INTERNACAO
+[923/950] Refs:  1 | Tokens: 520 | Gasto: $0.0678 | 1 achado(s): INTERNACAO
+[924/950] Refs:  1 | Tokens: 518 | Gasto: $0.0678 | 1 achado(s): INTERNACAO
+[925/950] Refs:  1 | Tokens: 526 | Gasto: $0.0679 | 1 achado(s): INTERNACAO
+[926/950] Refs: 13 | Tokens: 561 | Gasto: $0.0680 | 2 achado(s): REAVALIACAO_PIORA, PROGRESSAO_IMAGEM
+[927/950] Refs:  6 | Tokens: 527 | Gasto: $0.0681 | 1 achado(s): PROGRESSAO_IMAGEM
+[928/950] Refs:  9 | Tokens: 527 | Gasto: $0.0682 | 1 achado(s): PRONTO_SOCORRO
+[929/950] Refs:  1 | Tokens: 512 | Gasto: $0.0683 | 1 achado(s): INTERNACAO
+[930/950] Refs:  6 | Tokens: 512 | Gasto: $0.0683 | 1 achado(s): PRONTO_SOCORRO
+[931/950] Refs:  2 | Tokens: 511 | Gasto: $0.0684 | 1 achado(s): PRONTO_SOCORRO
+[932/950] Refs:  1 | Tokens: 520 | Gasto: $0.0685 | 1 achado(s): INTERNACAO
+[933/950] Refs:  1 | Tokens: 511 | Gasto: $0.0686 | 1 achado(s): INTERNACAO
+[934/950] Refs:  1 | Tokens: 515 | Gasto: $0.0686 | 1 achado(s): INTERNACAO
+[935/950] Refs: 17 | Tokens: 522 | Gasto: $0.0687 | 1 achado(s): REAVALIACAO_PIORA
+[936/950] Refs:  8 | Tokens: 524 | Gasto: $0.0688 | 1 achado(s): PROGRESSAO_IMAGEM
+[937/950] Refs: 14 | Tokens: 549 | Gasto: $0.0689 | 1 achado(s): REAVALIACAO_PIORA
+[938/950] Refs:  1 | Tokens: 512 | Gasto: $0.0690 | 1 achado(s): INTERNACAO
+[939/950] Refs:  7 | Tokens: 514 | Gasto: $0.0690 | 1 achado(s): BIOPSIA_POSITIVA
+[940/950] Refs:  2 | Tokens: 520 | Gasto: $0.0691 | 1 achado(s): INTERNACAO
+[941/950] Refs:  1 | Tokens: 520 | Gasto: $0.0692 | 1 achado(s): INTERNACAO
+[942/950] Refs:  1 | Tokens: 515 | Gasto: $0.0693 | 1 achado(s): INTERNACAO
+[943/950] Refs:  1 | Tokens: 518 | Gasto: $0.0693 | 1 achado(s): INTERNACAO
+[944/950] Refs:  1 | Tokens: 518 | Gasto: $0.0694 | 1 achado(s): INTERNACAO
+[945/950] Refs:  1 | Tokens: 514 | Gasto: $0.0695 | 1 achado(s): INTERNACAO
+[946/950] Refs:  1 | Tokens: 520 | Gasto: $0.0696 | 1 achado(s): INTERNACAO
+[947/950] Refs:  1 | Tokens: 520 | Gasto: $0.0697 | 1 achado(s): INTERNACAO
+[948/950] Refs:  1 | Tokens: 518 | Gasto: $0.0697 | 1 achado(s): INTERNACAO
+[949/950] Refs:  1 | Tokens: 520 | Gasto: $0.0698 | 1 achado(s): INTERNACAO
+[950/950] Refs:  1 | Tokens: 522 | Gasto: $0.0699 | 1 achado(s): INTERNACAO
+
+================================================================================
+EXTRAÇÃO EM LOTE CONCLUÍDA COM SUCESSO!
+• Textos Únicos Chamados:     950
+• Total de Campos Atualizados: 2623
+• Total Prompt Tokens:        471,125
+• Total Completion Tokens:    14,043
+• Gasto Real Estimado:        $0.0699 USD (~R$ 0.40)
+• Tempo Total:                2.3 minutos (135.1s)
+• Dados salvos na tabela:     'extracoes_llm' em ordovitae.sqlite3
+• Log completo salvo em:      C:\Users\rsaho\OneDrive - PUCRS - BR\hackatona\OrdoVitae\backend\relatorio_extracao_llm.txt
+================================================================================
