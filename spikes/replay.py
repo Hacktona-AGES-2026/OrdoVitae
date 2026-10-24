@@ -6,7 +6,7 @@ import statistics as st
 import sys
 from datetime import date
 
-from extracao_rapida import NAO_CALMO, REF, carregar, cid, extrair_evento, extrair_solicitacao
+from carga import NAO_CALMO, REF, carregar, cid, extrair_evento, extrair_solicitacao
 
 sys.path.insert(0, "../backend")
 from motor import EstadoAprovado, ItemFila, avaliar, decidir, ordenar, prazos_estourados  # noqa: E402

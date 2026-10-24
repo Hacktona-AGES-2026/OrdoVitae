@@ -4,7 +4,7 @@ import statistics as st
 import sys
 from datetime import date, timedelta
 
-from extracao_rapida import DETERIORA, REF, carregar, cid
+from carga import DETERIORA, REF, carregar, cid
 
 sys.path.insert(0, "../backend")
 from motor import avaliar  # noqa: E402

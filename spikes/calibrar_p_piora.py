@@ -4,7 +4,7 @@ Oncológico ficou de fora: células com n < 10, e o CID já pesa nos pontos clí
 import collections as Cn
 from datetime import timedelta
 
-from extracao_rapida import DETERIORA, REF, carregar, date
+from carga import DETERIORA, REF, carregar, date
 
 fila, _, achados = carregar()
 g = Cn.defaultdict(lambda: [0, 0])

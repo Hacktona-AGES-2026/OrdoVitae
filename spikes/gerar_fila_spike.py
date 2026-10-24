@@ -3,7 +3,7 @@ import csv
 import sys
 from datetime import date
 
-from extracao_rapida import NAO_CALMO, REF, carregar, cid
+from carga import NAO_CALMO, REF, carregar, cid
 
 sys.path.insert(0, "../backend")
 from motor import ItemFila, avaliar, ordenar  # noqa: E402
